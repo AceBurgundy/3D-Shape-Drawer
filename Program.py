@@ -1,11 +1,10 @@
-from typing import List, Callable
 import customtkinter
 
 from Navigation import Navigation
 from Canvas import OpenGLCanvas
 from Shape import Shape
 
-from constants import WINDOW_SIZE
+from constants import *
 
 class App(customtkinter.CTk):
     def __init__(self) -> None:
@@ -14,6 +13,8 @@ class App(customtkinter.CTk):
         """
         super().__init__()
         self.geometry(WINDOW_SIZE)
+        self.title("3D Shape Drawer by: Sam Adrian P. Sabalo")
+        self.iconbitmap(ICON_PATH)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0, uniform="nav_col")
