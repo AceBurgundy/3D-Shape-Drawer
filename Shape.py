@@ -7,21 +7,8 @@ from math import *
 
 class Shape:
 
-    canvas_width: int = 0
-    canvas_height: int = 0
     shape_color: Tuple[float] = WHITE
-
-    @classmethod
-    def get_shape_data(shape):
-        """
-        Returns the shapes dimensions and size
-        """
-        center_x: float = shape.canvas_width / 2
-        center_y: float = shape.canvas_height / 2
-        size: float = min(shape.canvas_width, shape.canvas_height) * 0.8
-        half_size: float = size / 2
-
-        return [center_x, center_y, half_size]
+    draw_edges: bool = False
 
     @classmethod
     def all_shapes(cls) -> List[Callable]:
@@ -31,7 +18,7 @@ class Shape:
         Returns:
             List[Callable]: A list of all shape draw callables.
         """
-        static_methods: List[Callable] = []
+        static_methods = []
         for value in vars(cls).values():
             if isinstance(value, staticmethod):
                 static_methods.append(value)
@@ -39,100 +26,185 @@ class Shape:
         return static_methods
 
     @staticmethod
-    def triangle():
+    def cube():
         """
-        Draws a triangle at the specified coordinates
+        Draws a white cube with black edges
         """
-        center_x, center_y, half_size = Shape.get_shape_data()
-
         glColor3f(*Shape.shape_color)
-        glBegin(GL_TRIANGLES)
-        glVertex2f(center_x, center_y + half_size)
-        glVertex2f(center_x - half_size, center_y - half_size)
-        glVertex2f(center_x + half_size, center_y - half_size)
+        glBegin(GL_QUADS)
+
+        vertices = (
+            (1, 1, 1), (1, -1, 1), (-1, -1, 1), (-1, 1, 1),
+            (1, 1, -1), (1, -1, -1), (-1, -1, -1), (-1, 1, -1)
+        )
+
+        edges = (
+            (0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4),
+            (2, 3, 7, 6), (0, 3, 7, 4), (1, 2, 6, 5)
+        )
+
+        for edge in edges:
+            for vertex in edge:
+                glVertex3iv(vertices[vertex])
+
         glEnd()
+
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            glBegin(GL_LINES)
+
+            for edge in ((0, 1), (1, 2), (2, 3), (3, 0)):
+                for vertex in edge:
+                    glVertex3iv(vertices[vertex])
+
+            for edge in ((4, 5), (5, 6), (6, 7), (7, 4)):
+                for vertex in edge:
+                    glVertex3iv(vertices[vertex])
+
+            for index in range(4):
+                glVertex3iv(vertices[index])
+                glVertex3iv(vertices[index + 4])
+
+            glEnd()
+
         glFlush()
 
     @staticmethod
-    def square():
+    def sphere():
         """
-        Draws a square at the specified coordinates
+        Draws a sphere at the specified coordinates
         """
-        center_x, center_y, half_size = Shape.get_shape_data()
+        radius = 1.5
+        slices = 30
+        stacks = 30
+
+        glColor3f(*Shape.shape_color)
+        quadric = gluNewQuadric()
+        gluQuadricDrawStyle(quadric, GLU_FILL)
+        gluSphere(quadric, radius, slices, stacks)
+
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            quadric = gluNewQuadric()
+            gluQuadricDrawStyle(quadric, GLU_LINE)
+            gluSphere(quadric, radius, slices, stacks)
+
+    @staticmethod
+    def cylinder():
+        """
+        Draws a cylinder at the specified coordinates
+        """
+        radius = 1.0
+        height = 2.0
+        slices = 60
+
+        glColor3f(*Shape.shape_color)
+        quadric = gluNewQuadric()
+        gluQuadricDrawStyle(quadric, GLU_FILL)
+        gluCylinder(quadric, radius, radius, height, slices, slices)
+
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            quadric = gluNewQuadric()
+            gluQuadricDrawStyle(quadric, GLU_LINE)
+            gluCylinder(quadric, radius, radius, height, slices, slices)
+
+    @staticmethod
+    def cone():
+        """
+        Draws a cone at the specified coordinates
+        """
+        radius = 1.0
+        height = 2.0
+        slices = 30
+
+        glColor3f(*Shape.shape_color)
+        quadric = gluNewQuadric()
+        gluQuadricDrawStyle(quadric, GLU_FILL)
+        gluCylinder(quadric, 0, radius, height, slices, slices)
+
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            quadric = gluNewQuadric()
+            gluQuadricDrawStyle(quadric, GLU_LINE)
+            gluCylinder(quadric, 0, radius, height, slices, slices)
+
+    @staticmethod
+    def cuboid():
+        """
+        Draws a cuboid at the specified coordinates
+        """
+        width = 1.5
+        height = 1.0
+        depth = 3
+
+        vertices = [
+            (-width / 2, -height / 2, -depth / 2),
+            (width / 2, -height / 2, -depth / 2),
+            (width / 2, height / 2, -depth / 2),
+            (-width / 2, height / 2, -depth / 2),
+            (-width / 2, -height / 2, depth / 2),
+            (width / 2, -height / 2, depth / 2),
+            (width / 2, height / 2, depth / 2),
+            (-width / 2, height / 2, depth / 2)
+        ]
 
         glColor3f(*Shape.shape_color)
         glBegin(GL_QUADS)
-        glVertex2f(center_x - half_size, center_y - half_size)
-        glVertex2f(center_x + half_size, center_y - half_size)
-        glVertex2f(center_x + half_size, center_y + half_size)
-        glVertex2f(center_x - half_size, center_y + half_size)
+        for face in (
+            (0, 1, 2, 3),  # front face
+            (4, 5, 6, 7),  # back face
+            (0, 4, 7, 3),  # left face
+            (1, 5, 6, 2),  # right face
+            (0, 1, 5, 4),  # bottom face
+            (3, 2, 6, 7)   # top face
+        ):
+            for vertex in face:
+                glVertex3fv(vertices[vertex])
+
         glEnd()
-        glFlush()
+
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            glBegin(GL_LINES)
+            for edge in (
+                (0, 1), (1, 2), (2, 3), (3, 0),
+                (4, 5), (5, 6), (6, 7), (7, 4),
+                (0, 4), (1, 5), (2, 6), (3, 7)
+            ):
+                for vertex in edge:
+                    glVertex3fv(vertices[vertex])
+
+            glEnd()
 
     @staticmethod
-    def circle():
+    def pyramid():
         """
-        Draws a circle at the specified coordinates
+        Draws a pyramid at the specified coordinates
         """
-        center_x, center_y, half_size = Shape.get_shape_data()
+        vertices = (
+            (1, -1, -1), (-1, -1, -1), (-1, -1, 1), (1, -1, 1), (0, 1, 0)
+        )
 
-        glColor3f(*Shape.shape_color)
-        glBegin(GL_POLYGON)
-        for index in range(100):
-            angle = 2 * pi * index / 100
-            x = center_x + half_size * cos(angle)
-            y = center_y + half_size * sin(angle)
-            glVertex2f(x, y)
-        glEnd()
-        glFlush()
+        faces = (
+            (0, 1, 4), (1, 2, 4), (2, 3, 4), (3, 0, 4),  # Bottom faces
+            (0, 1, 2, 3),  # Side face
+        )
 
-    @staticmethod
-    def pentagon():
-        """
-        Draws a pentagon at the specified coordinates
-        """
-        center_x, center_y, half_size = Shape.get_shape_data()
+        # Draw each face of the pyramid
+        for face in faces:
+            glColor3f(*Shape.shape_color)
+            glBegin(GL_POLYGON)
+            for vertex_index in face:
+                glVertex3iv(vertices[vertex_index])
+            glEnd()
 
-        glColor3f(*Shape.shape_color)
-        glBegin(GL_POLYGON)
-        for index in range(5):
-            angle = 2 * pi * index / 5
-            x = center_x + half_size * cos(angle)
-            y = center_y + half_size * sin(angle)
-            glVertex2f(x, y)
-        glEnd()
-        glFlush()
-
-    @staticmethod
-    def hexagon():
-        """
-        Draws a hexagon at the specified coordinates
-        """
-        center_x, center_y, half_size = Shape.get_shape_data()
-
-        glColor3f(*Shape.shape_color)
-        glBegin(GL_POLYGON)
-        for index in range(6):
-            angle = 2 * pi * index / 6
-            x = center_x + half_size * cos(angle)
-            y = center_y + half_size * sin(angle)
-            glVertex2f(x, y)
-        glEnd()
-        glFlush()
-
-    @staticmethod
-    def octagon():
-        """
-        Draws an octagon at the specified coordinates
-        """
-        center_x, center_y, half_size = Shape.get_shape_data()
-
-        glColor3f(*Shape.shape_color)
-        glBegin(GL_POLYGON)
-        for index in range(8):
-            angle = 2 * pi * index / 8
-            x = center_x + half_size * cos(angle)
-            y = center_y + half_size * sin(angle)
-            glVertex2f(x, y)
-        glEnd()
-        glFlush()
+        # Draw the edges
+        if Shape.draw_edges:
+            glColor3f(0.0, 0.0, 0.0)
+            glBegin(GL_LINES)
+            for face in faces:
+                for i in range(len(face)):
+                    glVertex3iv(vertices[face[i]])
+                    glVertex3iv(vertices[face[(i + 1) % len(face)]])
+            glEnd()
