@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Literal
 from os import path
 
 WINDOW_SIZE: str = "1080x720"
@@ -11,8 +11,8 @@ ICON_PATH: str = path.join('icon_asset', "switch.ico")
 
 DEFAULT_PADDING: int = 5
 
-BOTTOM_PADDING_ONLY: Tuple[0, int] = (0, DEFAULT_PADDING)
-RIGHT_PADDING_ONLY: Tuple[0, int] = (0, DEFAULT_PADDING)
+BOTTOM_PADDING_ONLY: Tuple[Literal[0], int] = (0, DEFAULT_PADDING)
+RIGHT_PADDING_ONLY: Tuple[Literal[0], int] = (0, DEFAULT_PADDING)
 
-TOP_PADDING_ONLY: Tuple[int, 0] = (DEFAULT_PADDING, 0)
-LEFT_PADDING_ONLY: Tuple[int, 0] = (DEFAULT_PADDING, 0)
+TOP_PADDING_ONLY: Tuple[int, Literal[0]] = (DEFAULT_PADDING, 0)
+LEFT_PADDING_ONLY: Tuple[int, Literal[0]] = (DEFAULT_PADDING, 0)

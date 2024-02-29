@@ -1,12 +1,12 @@
-import customtkinter
 
 from Frame.Render_3D import Canvas
 from Navigation import Navigation
+from customtkinter import CTk
 
 from custom_types import *
 from constants import *
 
-class App(customtkinter.CTk):
+class App(CTk):
     def __init__(self) -> None:
         """
         Initializes the app
