@@ -1,7 +1,13 @@
 from typing import List, Tuple
 
-type ENDPOINT = Tuple[NUMBER, NUMBER]
-type VERTICES = List[ENDPOINT] | None
+type VERTEX = Tuple[NUMBER, NUMBER, NUMBER] | Tuple[NUMBER, NUMBER]
+type VERTICES = List[VERTEX] | None
+
+type EDGE = Tuple[NUMBER, NUMBER]
+type EDGES = List[EDGE] | None
+
 type RGB = List[float, float, float]
+type RGBS = List[RGB]
+
 type COORDINATE = List[int ,int]
-type NUMBER = int|str
+type NUMBER = int|float
