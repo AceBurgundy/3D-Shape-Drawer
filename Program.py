@@ -1,9 +1,9 @@
 import customtkinter
 
+from Frame.Render_3D import Canvas
 from Navigation import Navigation
-from Canvas import Canvas
-from Shape import Shape
 
+from custom_types import *
 from constants import *
 
 class App(customtkinter.CTk):
@@ -12,24 +12,25 @@ class App(customtkinter.CTk):
         Initializes the app
         """
         super().__init__()
-        self.geometry(WINDOW_SIZE)
+        window_width: int = 1280
+        window_height: int = 720
+        screen_width: int = self.winfo_screenwidth()
+        screen_height: int = self.winfo_screenheight()
+
+        x_position: NUMBER = (screen_width - window_width) // 2
+        y_position: NUMBER = (screen_height - window_height) // 2
+
+        self.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
         self.title("3D Shape Drawer by: Sam Adrian P. Sabalo")
         self.iconbitmap(ICON_PATH)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0, uniform="nav_col")
         self.grid_columnconfigure(1, weight=1, uniform="nav_col")
-        self.bind("<Key>", self.pressed)
 
-        left_content: Navigation = Navigation(parent=self)
-        left_content.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
-        left_content.insert_buttons(Shape.all_shapes())
+        navigation: Navigation = Navigation(parent=self)
+        navigation.grid(row=0, column=0, padx=DEFAULT_PADDING, pady=DEFAULT_PADDING, sticky="nsew")
 
-        self.right_content: Canvas = Canvas(self)
-        self.right_content.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="nsew")
-
-    def pressed(self, event) -> None:
-        """
-        Handles key press events here since pyopengltk.Canvas doesn't seem to catch key press events
-        """
-        self.right_content.key_pressed(event)
+        self.canvas: Canvas = Canvas(self)
+        self.canvas.grid(row=0, column=1, padx=BOTTOM_PADDING_ONLY, pady=DEFAULT_PADDING, sticky="nsew")
+        self.bind("<Key>", lambda event: self.canvas.key_pressed(event))
