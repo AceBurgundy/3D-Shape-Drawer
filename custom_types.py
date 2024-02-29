@@ -1,13 +1,14 @@
-from typing import List, Tuple
+from typing import List, Tuple, TypeAlias
 
-type VERTEX = Tuple[NUMBER, NUMBER, NUMBER] | Tuple[NUMBER, NUMBER]
-type VERTICES = List[VERTEX] | None
+NUMBER: TypeAlias = int|float
 
-type EDGE = Tuple[NUMBER, NUMBER]
-type EDGES = List[EDGE] | None
+VERTEX: TypeAlias = Tuple[NUMBER, NUMBER, NUMBER] | Tuple[NUMBER, NUMBER]
+VERTICES: TypeAlias = List[VERTEX] | None
 
-type RGB = List[float, float, float]
-type RGBS = List[RGB]
+EDGE: TypeAlias = Tuple[NUMBER, NUMBER]
+EDGES: TypeAlias = List[EDGE] | None
 
-type COORDINATE = List[int ,int]
-type NUMBER = int|float
+RGB: TypeAlias = List[float]
+RGBS: TypeAlias = List[RGB]
+
+COORDINATE: TypeAlias = List[int]
