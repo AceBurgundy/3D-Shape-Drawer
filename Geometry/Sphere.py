@@ -25,16 +25,16 @@ class Sphere(Shape):
     @override
     def __change_shape(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the sphere by Shape.resize_value units.
+        Increases or decreases the size of the sphere by Shape.default_increment units.
 
         Args:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.radius += Shape.resize_value
+            self.radius += Shape.default_increment
         else:
-            if self.radius > Shape.resize_value:
-                self.radius -= Shape.resize_value
+            if self.radius > Shape.default_increment:
+                self.radius -= Shape.default_increment
 
     @override
     def draw(self, offscreen) -> None:

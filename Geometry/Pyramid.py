@@ -22,18 +22,18 @@ class Pyramid(Shape):
     @override
     def __change_shape(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the pyramid by Shape.resize_value units.
+        Increases or decreases the size of the pyramid by Shape.default_increment units.
 
         Args:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.base_length += Shape.resize_value
-            self.height += Shape.resize_value
+            self.base_length += Shape.default_increment
+            self.height += Shape.default_increment
         else:
-            if self.base_length > Shape.resize_value and self.height > Shape.resize_value:
-                self.base_length -= Shape.resize_value
-                self.height -= Shape.resize_value
+            if self.base_length > Shape.default_increment and self.height > Shape.default_increment:
+                self.base_length -= Shape.default_increment
+                self.height -= Shape.default_increment
 
     @override
     def draw(self, offscreen) -> None:

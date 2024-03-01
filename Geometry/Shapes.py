@@ -12,7 +12,7 @@ class Shape(ABC):
     Abstract base class representing a 3D geometric shape.
     """
 
-    resize_value: int = 10
+    default_increment: int = 10
     buffer_colors: Dict[str, RGB] = {}
     mouse_x: int = -1
     mouse_y: int = -1
@@ -196,32 +196,38 @@ class Shape(ABC):
 
         self.background_color = (red, green, blue)
 
+    def move_up(self: 'Shape') -> None:
+        """
+        Moves shape up
+        """
+        self.y += Shape.default_increment
+
     def move_down(self: 'Shape') -> None:
         """
-        Moves sphere down
+        Moves shape down
         """
-        self.y -= 10
+        self.y -= Shape.default_increment
 
     def move_forward(self: 'Shape') -> None:
         """
-        Moves sphere forward
+        Moves shape forward
         """
-        self.z += 10
+        self.z += Shape.default_increment
 
     def move_backward(self: 'Shape') -> None:
         """
-        Moves sphere backward
+        Moves shape backward
         """
-        self.z -= 10
+        self.z -= Shape.default_increment
 
     def move_left(self: 'Shape') -> None:
         """
-        Moves sphere left
+        Moves shape left
         """
-        self.x -= 10
+        self.x -= Shape.default_increment
 
     def move_right(self: 'Shape') -> None:
         """
-        Moves sphere right
+        Moves shape right
         """
-        self.x += 10
+        self.x += Shape.default_increment

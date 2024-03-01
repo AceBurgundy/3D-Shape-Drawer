@@ -24,20 +24,20 @@ class Cuboid(Shape):
     @override
     def __change_shape(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the cube by Shape.resize_value units.
+        Increases or decreases the size of the cube by Shape.default_increment units.
 
         Args:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.width += Shape.resize_value
-            self.height += Shape.resize_value
-            self.depth += Shape.resize_value
+            self.width += Shape.default_increment
+            self.height += Shape.default_increment
+            self.depth += Shape.default_increment
         else:
-            if self.width > Shape.resize_value and self.height > Shape.resize_value and self.depth > Shape.resize_value:
-                self.width -= Shape.resize_value
-                self.height -= Shape.resize_value
-                self.depth -= Shape.resize_value
+            if self.width > Shape.default_increment and self.height > Shape.default_increment and self.depth > Shape.default_increment:
+                self.width -= Shape.default_increment
+                self.height -= Shape.default_increment
+                self.depth -= Shape.default_increment
 
     @override
     def draw(self, offscreen) -> None:
