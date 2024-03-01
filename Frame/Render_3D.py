@@ -231,4 +231,3 @@ class Canvas(pyopengltk.OpenGLFrame):
             shape.draw_to_canvas()
 
 
-

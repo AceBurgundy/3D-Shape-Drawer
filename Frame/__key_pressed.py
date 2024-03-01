@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from Frame.Render_3D import Canvas
-
+    from Geometry.Shapes import Shape
 from typing import Dict, List
 from tkinter import Event
 from OpenGL.GLU import *
@@ -48,10 +48,10 @@ def handle_key_pressed(canvas_instance: Canvas, event) -> None:
     key: str = press_status['key']
 
     if key == 'Up':
-        canvas_instance.camera_zoom_translate -= 0.2
+        canvas_instance.camera_zoom_translate -= Shape.default_increment
 
     elif key == 'Down':
-        canvas_instance.camera_zoom_translate += 0.2
+        canvas_instance.camera_zoom_translate += Shape.default_increment
 
     elif key.lower() == 'w':
         canvas_instance.__move_camera(0, 0, 1) # forward_vector
