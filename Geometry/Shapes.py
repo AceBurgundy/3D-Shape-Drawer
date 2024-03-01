@@ -17,7 +17,7 @@ class Shape(ABC):
     mouse_x: int = -1
     mouse_y: int = -1
 
-    def __init__(self: 'Shape') -> None:
+    def __init__(self) -> None:
         """
         Initializes a Shape object with the given parameters.
         """
@@ -59,7 +59,7 @@ class Shape(ABC):
 
         return new_color
 
-    def draw_to_canvas(self: 'Shape', offscreen: bool = False) -> None:
+    def draw_to_canvas(self, offscreen: bool = False) -> None:
         """
         Renders the shape to the canvas
 
@@ -86,7 +86,7 @@ class Shape(ABC):
         glFlush()
 
     @abstractmethod
-    def within_bounds(self: 'Shape') -> bool:
+    def within_bounds(self) -> bool:
         """
         Checks if the given coordinates are within the bounds of the shape.
 
@@ -100,7 +100,7 @@ class Shape(ABC):
         pass
 
     @abstractmethod
-    def draw(self: 'Shape', offscreen: bool = False) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Abstract method to draw the shape.
 
@@ -126,7 +126,7 @@ class Shape(ABC):
         for vertex in self.vertices:
             self.draw_dot_at(*vertex)
 
-    def draw_dot_at(self: 'Shape', x: int, y: int, z: int) -> None:
+    def draw_dot_at(self, x: int, y: int, z: int) -> None:
         """
         Draw a circle at the specified (x, y, z) coordinate.
 
@@ -146,25 +146,25 @@ class Shape(ABC):
         glEnd()
 
     @abstractmethod
-    def __change_shape(self: 'Shape', increment: bool=True) -> None:
+    def __change_shape(self, increment: bool=True) -> None:
         """
         Increases or decreases the size of the shape by 5 pixels.
         """
         raise NotImplementedError()
 
-    def increase_shape(self: 'Shape') -> None:
+    def increase_shape(self) -> None:
         """
         Increase the size of the shape by 5 pixels.
         """
         self.__change_shape()
 
-    def decrease_shape(self: 'Shape') -> None:
+    def decrease_shape(self) -> None:
         """
         Decrease the size of the shape by 5 pixels.
         """
         self.__change_shape(False)
 
-    def rotate(self: 'Shape') -> None:
+    def rotate(self) -> None:
         """
         Rotates the shape base on the current coordinates of the mouse
         """
@@ -177,7 +177,7 @@ class Shape(ABC):
         # set the angle as the radians as degrees
         self.angle = degrees(angle_radians)
 
-    def set_new_color_from_hex(self: 'Shape', hex_color: str) -> None:
+    def set_new_color_from_hex(self, hex_color: str) -> None:
         """
         Convert a hexadecimal color string to RGB floats.
 
@@ -196,37 +196,37 @@ class Shape(ABC):
 
         self.background_color = (red, green, blue)
 
-    def move_up(self: 'Shape') -> None:
+    def move_up(self) -> None:
         """
         Moves shape up
         """
         self.y += Shape.default_increment
 
-    def move_down(self: 'Shape') -> None:
+    def move_down(self) -> None:
         """
         Moves shape down
         """
         self.y -= Shape.default_increment
 
-    def move_forward(self: 'Shape') -> None:
+    def move_forward(self) -> None:
         """
         Moves shape forward
         """
         self.z += Shape.default_increment
 
-    def move_backward(self: 'Shape') -> None:
+    def move_backward(self) -> None:
         """
         Moves shape backward
         """
         self.z -= Shape.default_increment
 
-    def move_left(self: 'Shape') -> None:
+    def move_left(self) -> None:
         """
         Moves shape left
         """
         self.x -= Shape.default_increment
 
-    def move_right(self: 'Shape') -> None:
+    def move_right(self) -> None:
         """
         Moves shape right
         """
