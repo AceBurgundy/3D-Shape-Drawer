@@ -11,7 +11,6 @@ from typing import Dict, List
 from tkinter import Event
 from OpenGL.GLU import *
 from OpenGL.GL import *
-from numpy import dot
 
 def __get_pressed_status(event: Event):
     """
@@ -41,38 +40,27 @@ def __get_pressed_status(event: Event):
 
     return result
 
-def __move_camera(canvas_instance: Canvas, direction_vector: List[float]) -> None:
-    """
-    Move the camera in the specified direction relative to its orientation.
-    """
-    rotation_matrix = glGetDoublev(GL_MODELVIEW_MATRIX)
-    transformed_direction = dot(rotation_matrix[:3, :3], direction_vector)
-
-    canvas_instance.camera_x_translate += transformed_direction[0]
-    canvas_instance.camera_y_translate += transformed_direction[1]
-    canvas_instance.camera_zoom_translate += transformed_direction[2]
-
-def handle_key_pressed(canvas: Canvas, event) -> None:
+def handle_key_pressed(canvas_instance: Canvas, event) -> None:
     """
     Handles key pressed events sent from main CTk frame
     """
     press_status: Dict[str, List|str] = __get_pressed_status(event)
     key: str = press_status['key']
 
-    if key == 'space':
-        canvas.camera_zoom_translate -= 0.2
+    if key == 'Up':
+        canvas_instance.camera_zoom_translate -= 0.2
 
     elif key == 'Down':
-        canvas.camera_zoom_translate += 0.2
+        canvas_instance.camera_zoom_translate += 0.2
 
     elif key.lower() == 'w':
-        __move_camera(canvas, 0, 0, 1) # forward_vector
+        canvas_instance.__move_camera(0, 0, 1) # forward_vector
 
     elif key.lower() == 's':
-        __move_camera(canvas, 0, 0, -1) # backward_vector
+        canvas_instance.__move_camera(0, 0, -1) # backward_vector
 
     elif key.lower() == 'a':
-        __move_camera(canvas, 1, 0, 0) # left_vector
+        canvas_instance.__move_camera(1, 0, 0) # left_vector
 
     elif key.lower() == 'd':
-        __move_camera(canvas, -1, 0, 0) # right_vector
+        canvas_instance.__move_camera(-1, 0, 0) # right_vector

@@ -24,6 +24,7 @@ from .__on_click import on_mouse_clicked
 from .__on_move import on_mouse_move
 
 from custom_types import *
+from numpy import dot
 
 class Canvas(pyopengltk.OpenGLFrame):
 
@@ -74,6 +75,17 @@ class Canvas(pyopengltk.OpenGLFrame):
         Returns the properly calculated camera translation
         """
         return [self.camera_x_translate, self.camera_y_translate, self.camera_zoom_translate]
+
+    def __move_camera(self, direction_vector: List[float]) -> None:
+        """
+        Move the camera in the specified direction relative to its orientation.
+        """
+        rotation_matrix = glGetDoublev(GL_MODELVIEW_MATRIX)
+        transformed_direction = dot(rotation_matrix[:3, :3], direction_vector)
+
+        self.camera_x_translate += transformed_direction[0]
+        self.camera_y_translate += transformed_direction[1]
+        self.camera_zoom_translate += transformed_direction[2]
 
     def key_pressed(self, event: Event):
         """
