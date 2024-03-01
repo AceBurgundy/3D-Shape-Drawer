@@ -1,8 +1,7 @@
+from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluQuadricDrawStyle, gluSphere, gluNewQuadric, gluQuadricDrawStyle, GLU_LINE, gluSphere
+from OpenGL.GL import glColor3f, glColor3f
 from Geometry.Shapes import Shape
 from typing import override
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from math import *
 
 from custom_types import *
@@ -41,6 +40,9 @@ class Sphere(Shape):
     def draw(self, offscreen) -> None:
         """
         Draws the sphere
+
+        Args:
+            offscreen (bool): If the shape will be rendered off screen
         """
         assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)

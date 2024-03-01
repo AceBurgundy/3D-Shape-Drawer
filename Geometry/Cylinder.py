@@ -1,8 +1,7 @@
+from OpenGL.GLU import gluNewQuadric, GLU_FILL, gluCylinder, gluQuadricDrawStyle, GLU_LINE
 from Geometry.Shapes import Shape
+from OpenGL.GL import glColor3f
 from typing import override
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from math import *
 
 from custom_types import *
@@ -45,6 +44,9 @@ class Cylinder(Shape):
     def draw(self, offscreen) -> None:
         """
         Draws the cylinder
+
+        Args:
+            offscreen (bool): If the shape will be rendered off screen
         """
         assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)

@@ -1,8 +1,6 @@
+from OpenGL.GL import glBegin, GL_TRIANGLES, glVertex3f, glEnd, glColor3f, GL_LINE_LOOP
 from Geometry.Shapes import Shape
 from typing import override
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from math import *
 
 from custom_types import *
@@ -41,6 +39,9 @@ class Pyramid(Shape):
     def draw(self, offscreen) -> None:
         """
         Draws a pyramid
+
+        Args:
+            offscreen (bool): If the shape will be rendered off screen
         """
         assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)

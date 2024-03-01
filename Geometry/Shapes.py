@@ -1,8 +1,6 @@
+from OpenGL.GL import glBegin, glEnd, glPopMatrix, glFlush, glColor3f, glVertex3f, glPushMatrix, glTranslatef, glRotatef, glRotatef, glTranslatef, GL_POLYGON
 from abc import ABC, abstractmethod
 from random import random
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from typing import Dict
 from math import *
 
@@ -54,9 +52,10 @@ class Shape(ABC):
         Returns:
         Tuple: A Tuple containing three random float values between 0.0 and 1.0 representing RGB color.
         """
-        new_color: RGB = [random(), random(), random()]
+        new_color: RGB = (random(), random(), random())
+
         while new_color in Shape.buffer_colors.values():
-            new_color: RGB = [random(), random(), random()]
+            new_color = (random(), random(), random())
 
         return new_color
 
@@ -86,6 +85,7 @@ class Shape(ABC):
         glPopMatrix()
         glFlush()
 
+    @abstractmethod
     def within_bounds(self: 'Shape') -> bool:
         """
         Checks if the given coordinates are within the bounds of the shape.
@@ -162,8 +162,7 @@ class Shape(ABC):
         """
         Decrease the size of the shape by 5 pixels.
         """
-        if self.width > 10:
-            self.__change_shape(False)
+        self.__change_shape(False)
 
     def rotate(self: 'Shape') -> None:
         """
@@ -178,7 +177,7 @@ class Shape(ABC):
         # set the angle as the radians as degrees
         self.angle = degrees(angle_radians)
 
-    def set_new_color_from_hex(self: 'Shape', hex_color: str) -> Tuple:
+    def set_new_color_from_hex(self: 'Shape', hex_color: str) -> None:
         """
         Convert a hexadecimal color string to RGB floats.
 
@@ -191,10 +190,11 @@ class Shape(ABC):
         # Remove '#' from the beginning if present
         hex_color = hex_color.lstrip('#')
 
-        # Convert hexadecimal to RGB
-        rgb: Tuple[int] = tuple(int(hex_color[index: index + 2], 16) / 255.0 for index in (0, 2, 4))
+        red: int = int(hex_color[0:2], 16)
+        green: int = int(hex_color[2:4], 16)
+        blue: int = int(hex_color[4:6], 16)
 
-        self.background_color = rgb
+        self.background_color = (red, green, blue)
 
     def move_down(self: 'Shape') -> None:
         """

@@ -1,8 +1,6 @@
+from OpenGL.GL import glBegin, GL_QUADS, glColor3f, GL_LINES, glVertex3fv, glEnd
 from Geometry.Shapes import Shape
 from typing import override
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from math import *
 
 from custom_types import *
@@ -45,6 +43,9 @@ class Cube(Shape):
     def draw(self, offscreen) -> None:
         """
         Draws a cube
+
+        Args:
+            offscreen (bool): If the shape will be rendered off screen
         """
         self.vertices: VERTICES = [
             (-self.half_width, -self.half_height, -self.half_depth),  # Vertex 0
