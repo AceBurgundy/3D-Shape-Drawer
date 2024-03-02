@@ -9,7 +9,7 @@ from constants import *
 
 class Sphere(Shape):
 
-    def __init__(self, radius: NUMBER = 1.5, slices: int = 3, stacks: int = 30) -> None:
+    def __init__(self, radius: NUMBER = 1.5, slices: int = 25, stacks: int = 25) -> None:
         """
         Initializes the sphere
 
@@ -51,12 +51,18 @@ class Sphere(Shape):
         quadric = gluNewQuadric()
         gluQuadricDrawStyle(quadric, GLU_FILL)
         gluSphere(quadric, self.radius, self.slices, self.stacks)
+        self.draw_grid()
 
-        if self.show_grid:
-            glColor3f(*self.grid_color)
-            quadric = gluNewQuadric()
-            gluQuadricDrawStyle(quadric, GLU_LINE)
-            gluSphere(quadric, self.radius, self.slices, self.stacks)
+    def draw_grid(self) -> None:
+        """
+        Draws a grid that is wrapping up the sphere
+        """
+        super().draw_grid()
+
+        glColor3f(*self.grid_color)
+        quadric = gluNewQuadric()
+        gluQuadricDrawStyle(quadric, GLU_LINE)
+        gluSphere(quadric, self.radius, self.slices, self.stacks)
 
         # used for mapping out all dots in the grid
         for stack in range(self.stacks + 1):
@@ -67,3 +73,4 @@ class Sphere(Shape):
                 y: NUMBER = self.radius * sin(phi) * sin(theta)
                 z: NUMBER = self.radius * cos(phi)
                 self.vertices.append((x, y, z))
+                self.draw_dot_at(x, y, z)

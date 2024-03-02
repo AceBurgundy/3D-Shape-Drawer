@@ -1,4 +1,5 @@
-from OpenGL.GL import glBegin, glEnd, glPopMatrix, glFlush, glColor3f, glVertex3f, glPushMatrix, glTranslatef, glRotatef, glRotatef, glTranslatef, GL_POLYGON
+from OpenGL.GL import glDisable, glPopMatrix, glFlush, glVertex3f, glPushMatrix, glTranslatef, glRotatef, glRotatef, glTranslatef, GL_BLEND
+from OpenGL.GLU import gluNewQuadric, gluQuadricDrawStyle, GLU_FILL, gluSphere
 from abc import ABC, abstractmethod
 from random import random
 from typing import Dict
@@ -26,11 +27,12 @@ class Shape(ABC):
         # Cone: (1.0, 0.3, 0.9)
         Shape.buffer_colors[self.__class__.__name__] = Shape.new_rgb()
 
-        self.selected: bool = False
-        self.show_grid: bool = False
+        self.selected: bool = True
+        self.show_grid: bool = True
 
-        self.background_color: RGB = WHITE
+        self.background_color: RGB = GREY
         self.grid_color: RGB = ORANGE if self.selected else BLACK
+        self.rotate_shape: bool = False
 
         self.angle: NUMBER = 0
         self.x: int = 0
@@ -63,24 +65,28 @@ class Shape(ABC):
         Args:
             offscreen (bool): If the shape is to be rendered off screen
         """
-        # To keep track of rotation
-        glPushMatrix()  # Save the current matrix
-        glTranslatef(self.x, self.y, self.z)  # Translate to the center of the shape
-        glRotatef(Shape.mouse_x, 1, 0, 0)  # Rotate around the x-axis
-        glRotatef(Shape.mouse_y, 0, 1, 0)  # Rotate around the y-axis
-        glTranslatef(-self.x, -self.y, -self.z)  # Translate back to the original position
-
         # Clears out the vertices first as it will be replenished by the draw method again
         # Not doing so will cause the vertices size to increase slowing the app
         self.vertices = []
 
+        if self.selected and self.rotate_shape:
+            # To keep track of rotation
+            glPushMatrix()  # Save the current matrix
+            glTranslatef(self.x, self.y, self.z)  # Translate to the center of the shape
+            glRotatef(Shape.mouse_x, 1, 0, 0)  # Rotate around the x-axis
+            glRotatef(Shape.mouse_y, 0, 1, 0)  # Rotate around the y-axis
+            glTranslatef(-self.x, -self.y, -self.z)  # Translate back to the original position
+
+            self.draw(offscreen)
+
+            if not offscreen:
+                self.draw_grid()
+
+            glPopMatrix()
+            glFlush()
+            return
+
         self.draw(offscreen)
-
-        if not offscreen:
-            self.draw_border()
-
-        glPopMatrix()
-        glFlush()
 
     # @abstractmethod
     # def within_bounds(self) -> bool:
@@ -106,22 +112,13 @@ class Shape(ABC):
         """
         raise NotImplementedError("You might've not implemented this shape")
 
-    def draw_border(self) -> None:
+    @abstractmethod
+    def draw_grid(self) -> None:
         """
-        Draws a polygon using GL_LINE_LOOP instead of GL_POLYGON.
-        After that, it draws a circle to where each point meet.
-
-        Args:
-            - self.number_of_sides (int): The number of sides for the polyon. Defaults to 0
+        Draws a grid that is wrapping up the shape
         """
-        if not self.selected:
+        if not self.selected and not self.show_grid:
             return
-
-        if len(self.vertices) < 0:
-            return
-
-        for vertex in self.vertices:
-            self.draw_dot_at(*vertex)
 
     def draw_dot_at(self, x: NUMBER, y: NUMBER, z: NUMBER) -> None:
         """
@@ -132,15 +129,14 @@ class Shape(ABC):
             y (int): The y-coordinate of the center of the circle.
             z (int): The z-coordinate of the center of the circle.
         """
-        num_segments: int = 100
-        radius: int = 4
+        radius: float = 0.02
 
-        glBegin(GL_POLYGON)
-        glColor3f(*self.grid_color)
-        for index in range(num_segments):
-            theta: NUMBER = 2.0 * 3.1415926 * index / num_segments
-            glVertex3f(x + radius * cos(theta), y + radius * sin(theta), z)
-        glEnd()
+        glPushMatrix()
+        glTranslatef(x, y, z)
+        quadric = gluNewQuadric()
+        gluQuadricDrawStyle(quadric, GLU_FILL)
+        gluSphere(quadric, radius, 10, 10)
+        glPopMatrix()
 
     @abstractmethod
     def change_shape(self, increment: bool=True) -> None:

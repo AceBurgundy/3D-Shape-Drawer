@@ -79,16 +79,26 @@ class Cube(Shape):
                 glVertex3fv(self.vertices[vertex])
 
         glEnd()
+        self.draw_grid()
 
-        if self.show_grid:
-            glColor3f(*self.grid_color)
-            glBegin(GL_LINES)
-            for edge in (
-                (0, 1), (1, 2), (2, 3), (3, 0),
-                (4, 5), (5, 6), (6, 7), (7, 4),
-                (0, 4), (1, 5), (2, 6), (3, 7)
-            ):
-                for vertex in edge:
-                    glVertex3fv(self.vertices[vertex])
+    def draw_grid(self) -> None:
+        """
+        Draws a grid that is wrapping up the cube
+        """
+        super().draw_grid()
 
-            glEnd()
+        glColor3f(*self.grid_color)
+        glBegin(GL_LINES)
+
+        for edge in (
+            (0, 1), (1, 2), (2, 3), (3, 0),
+            (4, 5), (5, 6), (6, 7), (7, 4),
+            (0, 4), (1, 5), (2, 6), (3, 7)
+        ):
+            for vertex in edge:
+                glVertex3fv(self.vertices[vertex])
+
+        glEnd()
+
+        for vertex in self.vertices:
+            self.draw_dot_at(*vertex)

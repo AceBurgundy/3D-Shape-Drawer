@@ -1,7 +1,8 @@
 from OpenGL.GLU import gluNewQuadric, GLU_FILL, gluCylinder, gluQuadricDrawStyle, GLU_LINE
+from OpenGL.GL import glColor3f, glDisable, GL_BLEND, GL_CURRENT_BIT
+from OpenGL.GL import glBegin, glEnd, glLineWidth, GL_LINES, glVertex3f
 from geometry.shapes import Shape
 from typing import Any, override
-from OpenGL.GL import glColor3f
 from math import *
 
 from custom_types import *
@@ -9,14 +10,14 @@ from constants import *
 
 class Cylinder(Shape):
 
-    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: int = 3) -> None:
+    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: int = 50) -> None:
         """
         Initializes the sphere
 
         Args:
             radius (NUMBER): the radius of the sphere. Defaults to 1.0
             height (NUMBER): the height of the sphere. Defaults to 2.0
-            slices (NUMBER): the slices of the sphere. Defaults to 3
+            slices (NUMBER): the slices (smoothness) of the sphere. Defaults to 3
         """
         super().__init__()
         self.radius: NUMBER = radius
@@ -52,6 +53,8 @@ class Cylinder(Shape):
         assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
+        glDisable(GL_BLEND)
+
         quadric = gluNewQuadric()
         cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
             quadric,
@@ -61,18 +64,67 @@ class Cylinder(Shape):
         )
 
         gluQuadricDrawStyle(quadric, GLU_FILL)
+        # gluCylinder( quad , base , top , height , slices , stacks )
         gluCylinder(*cylinder_arguments)
+        self.draw_grid()
 
-        if self.show_grid:
-            glColor3f(*self.grid_color)
-            quadric = gluNewQuadric()
-            gluQuadricDrawStyle(quadric, GLU_LINE)
-            gluCylinder(*cylinder_arguments)
+    @override
+    def draw_grid(self) -> None:
+        """
+        Draws a grid that is wrapping up the cylinder
+        """
+        super().draw_grid()
 
-        for slice_ in range(self.slices + 1):
-            theta: NUMBER = 2 * pi * slice_ / self.slices
-            for index in range(2):  # Two vertices for each circle (top and bottom)
-                x: NUMBER = self.radius * cos(theta)
-                y: NUMBER = self.radius * sin(theta)
-                z: NUMBER = index * self.height
-                self.vertices.append((x, y, z))
+        angle_increment: float = 2 * pi / self.slices
+        glColor3f(*self.grid_color)
+
+        glBegin(GL_LINES)
+
+        # Draw vertical lines along the circumference
+        for index in range(self.slices):
+
+            vertical_angle = index * angle_increment
+
+            # Calculate the position of the vertex on the circumference
+            vertical_x: float = self.radius * cos(vertical_angle)
+            vertical_y: float = self.radius * sin(vertical_angle)
+
+            # Draw lines connecting the vertex to the corresponding vertex on the opposite side of the cylinder
+            vertical_vertices: VERTICES = [
+                (vertical_x, vertical_y, 0),
+                (vertical_x, vertical_y, self.height)
+            ]
+
+            for vertex in vertical_vertices:
+                glVertex3f(*vertex)
+                self.vertices.append(vertex)
+
+        # Draw horizontal lines connecting vertices at the same height
+        for index in range(self.slices):
+
+            horizontal_angle: float = index * angle_increment
+            horizontal_next_angle: float = (index + 1) * angle_increment
+
+            horizontal_x_start: float = self.radius * cos(horizontal_angle)
+            horizontal_y_start: float = self.radius * sin(horizontal_angle)
+
+            horizontal_x_end: float = self.radius * cos(horizontal_next_angle)
+            horizontal_y_end: float = self.radius * sin(horizontal_next_angle)
+
+            # Draw lines connecting vertices at the same height
+            horizontal_vertices: VERTICES = [
+                (horizontal_x_start, horizontal_y_start, 0),
+                (horizontal_x_end, horizontal_y_end, 0),
+                (horizontal_x_start, horizontal_y_start, self.height),
+                (horizontal_x_end, horizontal_y_end, self.height)
+            ]
+
+            for vertex in horizontal_vertices:
+                glVertex3f(*vertex)
+                self.vertices.append(vertex)
+
+        glEnd()
+
+        if len(self.vertices) > 0:
+            for vertex in self.vertices:
+                self.draw_dot_at(*vertex)

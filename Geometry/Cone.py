@@ -1,7 +1,7 @@
 from OpenGL.GLU import gluQuadricDrawStyle, gluNewQuadric, gluCylinder, GLU_FILL, GLU_LINE
+from OpenGL.GL import glColor3f, glBegin, glEnd, GL_LINES, glVertex3f
 from geometry.shapes import Shape
 from typing import Any, override
-from OpenGL.GL import glColor3f
 from math import *
 
 from custom_types import *
@@ -9,7 +9,7 @@ from constants import *
 
 class Cone(Shape):
 
-    def __init__(self, radius: float = 1.0, height: float = 2.0, slices: int = 30) -> None:
+    def __init__(self, radius: float = 1.5, height: float = 2.5, slices: int = 30) -> None:
         """
         Initializes the cone
 
@@ -42,7 +42,7 @@ class Cone(Shape):
     @override
     def draw(self, offscreen: bool = False) -> None:
         """
-        Draws a cylinder
+        Draws a cone
 
         Args:
             offscreen (bool): If the shape will be rendered off screen
@@ -51,22 +51,51 @@ class Cone(Shape):
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         quadric = gluNewQuadric()
-        cone_arguments: Tuple[Any, Literal[0], float, float, NUMBER, NUMBER] = (
-            quadric, 0, self.radius, self.height, self.slices, self.slices
+        cone_arguments: Tuple[Any, float, Literal[0], float, int, int] = (
+            quadric, self.radius, 0, self.height, self.slices, self.slices
         )
 
         gluQuadricDrawStyle(quadric, GLU_FILL)
         gluCylinder(*cone_arguments)
+        self.draw_grid()
 
-        if self.show_grid:
-            glColor3f(*self.grid_color)
-            quadric = gluNewQuadric()
-            gluQuadricDrawStyle(quadric, GLU_LINE)
-            gluCylinder(*cone_arguments)
+    @override
+    def draw_grid(self) -> None:
+        """
+        Draws a grid that is wrapping up the cone
+        """
+        super().draw_grid()
 
-        for slice_ in range(self.slices + 1):
-            theta: NUMBER = 2 * pi * slice_ / self.slices
-            x: NUMBER = self.radius * cos(theta)
-            y: NUMBER = self.radius * sin(theta)
-            self.vertices.append((x, y, 0))
-        self.vertices.append((0, 0, self.height))
+        if len(self.vertices) < 0:
+            return
+
+        glColor3f(*self.grid_color)
+
+        # Calculate the angle between each vertex along the circumference
+        angle_increment: float = 2 * pi / self.slices
+
+        glBegin(GL_LINES)
+
+        # Draw vertical lines along the circumference
+        for index in range(self.slices):
+            angle: float = index * angle_increment
+
+            # Calculate the position of the vertex on the circumference
+            x: float = self.radius * cos(angle)
+            y: float = self.radius * sin(angle)
+
+            vertices: VERTICES = [
+                (x, y, 0),
+                (0, 0, self.height)
+            ]
+
+            for vertex in vertices:
+                glVertex3f(*vertex)
+                self.vertices.append(vertex)
+
+        glEnd()
+
+        if len(self.vertices) > 0:
+            for vertex in self.vertices:
+                self.draw_dot_at(*vertex)
+
