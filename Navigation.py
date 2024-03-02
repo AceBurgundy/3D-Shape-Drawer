@@ -29,14 +29,6 @@ class Navigation(CTkFrame):
         """
         super().__init__(parent, **kwargs)
 
-        if Canvas.terrain_drawn:
-            grid_noise = CTkSlider(self, command=lambda value: setattr(Canvas, 'grid_noise', value), from_=0.0, to=1.0, number_of_steps=10, width=100)
-            grid_noise.pack(pady= RIGHT_PADDING_ONLY, side="bottom")
-            grid_noise.set(0.0)
-
-            grid_noise_title = CTkLabel(self, text='Grid Noise')
-            grid_noise_title.pack(side="bottom")
-
         camera_sensitivity_slider = CTkSlider(self, command=lambda value: setattr(Canvas, 'camera_sensitivity', value), from_=0, to=1, number_of_steps=10, width=100)
         camera_sensitivity_slider.pack(pady= RIGHT_PADDING_ONLY, side="bottom")
         camera_sensitivity_slider.set(0.8)
