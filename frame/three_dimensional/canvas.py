@@ -8,8 +8,8 @@ if TYPE_CHECKING:
     from geometry.shapes import Shape
     from Program import App
 
-from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd
-from OpenGL.GL import GL_FRAMEBUFFER_COMPLETE, GL_COLOR_BUFFER_BIT, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER, GL_COLOR_ATTACHMENT0, GL_MODELVIEW_MATRIX, GL_DEPTH_BUFFER_BIT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_TEXTURE_2D, GL_PROJECTION, GL_MODELVIEW, GL_NEAREST, GL_LINES, GL_RGB
+from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd, glDisable, glEnable
+from OpenGL.GL import GL_FRAMEBUFFER_COMPLETE, GL_COLOR_BUFFER_BIT, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER, GL_COLOR_ATTACHMENT0, GL_MODELVIEW_MATRIX, GL_DEPTH_BUFFER_BIT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_TEXTURE_2D, GL_PROJECTION, GL_MODELVIEW, GL_NEAREST, GL_LINES, GL_RGB, GL_BLEND, GL_DEPTH_TEST
 from OpenGL.GLU import gluPerspective
 from tkinter import Event
 from typing import List
@@ -17,6 +17,7 @@ from math import *
 import pyopengltk
 
 # key methods
+from .__key_released import handle_key_released
 from .__key_pressed import handle_key_pressed
 
 # mouse methods
@@ -30,15 +31,14 @@ from numpy import dot
 class Canvas(pyopengltk.OpenGLFrame):
 
     camera_sensitivity: float = 0.8
-    grid_noise: float = 0.0
     shapes: List[Shape] = []
-    terrain_drawn: bool = False
 
     width: int = 0
     height: int = 0
 
     offscreen_framebuffer_id: int = -1
     offscreen_texture_id: int = -1
+    pressed_key: str = ''
 
     def __init__(self, parent: App, *args, **kwargs) -> None:
         """
@@ -62,6 +62,8 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         self.mouse_x: int = 0
         self.mouse_y: int = 0
+
+        self.dragging = False
         self.prev_mouse_x: int = 0
         self.prev_mouse_y: int = 0
         self.mouse_pressed: str = ''
@@ -77,7 +79,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         """
         return [self.camera_x_translate, self.camera_y_translate, self.camera_zoom_translate]
 
-    def __move_camera(self, direction_vector: List[float]) -> None:
+    def move_camera(self, direction_vector: List[float]) -> None:
         """
         Move the camera in the specified direction relative to its orientation.
         """
@@ -94,7 +96,13 @@ class Canvas(pyopengltk.OpenGLFrame):
         """
         handle_key_pressed(self, event)
 
-    def __draw_grid(self) -> None:
+    def key_released(self, event: Event):
+        """
+        Handle key press events
+        """
+        handle_key_released(self, event)
+
+    def __draw_grid(self, distance: int = 100) -> None:
         """
         Draw grid lines
         """
@@ -102,40 +110,14 @@ class Canvas(pyopengltk.OpenGLFrame):
         glBegin(GL_LINES)
 
         # Draw lines along the X-axis
-        for index in range(-100, 101):
-            glVertex3f(index, -100, 0)
-            glVertex3f(index, 100, 0)
+        for index in range(-distance, distance + 1):
+            glVertex3f(index, -distance, 0)
+            glVertex3f(index, distance, 0)
 
         # Draw lines along the Y-axis
-        for index in range(-100, 101):
-            glVertex3f(-100, index, 0)
-            glVertex3f(100, index, 0)
-
-        glEnd()
-
-    def __draw_terrain(self, noise: float = 1.0) -> None:
-        """
-        Draw grid lines with terrain generated from noise
-
-        Args:
-            noise (float): The scale factor for the terrain density. Defaults to 1.0
-        """
-        if type(noise) != 'float':
-            raise Exception("noise parameter for drawing terain only accepts floating point values")
-
-        Canvas.terrain_drawn = True
-        glColor3f(0.5, 0.5, 0.5)
-        glBegin(GL_LINES)
-
-        # Draw lines along the X-axis
-        for index in range(-100, 101):
-            glVertex3f(index, -100, cos(index * noise) * 10)
-            glVertex3f(index, 100, cos(index * noise) * 10)
-
-        # Draw lines along the Y-axis
-        for index in range(-100, 101):
-            glVertex3f(-100, index, cos(index * noise) * 10)
-            glVertex3f(100, index, cos(index * noise) * 10)
+        for index in range(-distance, distance + 1):
+            glVertex3f(-distance, index, 0)
+            glVertex3f(distance, index, 0)
 
         glEnd()
 
@@ -150,7 +132,8 @@ class Canvas(pyopengltk.OpenGLFrame):
         glLoadIdentity()
 
         self.viewMatrix = glGetFloatv(GL_MODELVIEW_MATRIX)
-        self.init_offscreen_buffer()
+        # self.init_offscreen_buffer()
+        glEnable(GL_DEPTH_TEST)
 
     def init_offscreen_buffer(self) -> None:
         """
@@ -206,7 +189,7 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(45, (self.width / self.height), 0.1, 150.0)
+        gluPerspective(45, (self.width / self.height), 1, 150)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
@@ -218,12 +201,9 @@ class Canvas(pyopengltk.OpenGLFrame):
         glTranslatef(*self.camera_translation)
 
         # Draw the grid
-        if Canvas.terrain_drawn:
-            self.__draw_terrain()
-        else:
-            self.__draw_grid()
+        self.__draw_grid()
 
-        self.draw_offscreen()
+        # self.draw_offscreen()
 
         if len(Canvas.shapes) <= 0:
             return
