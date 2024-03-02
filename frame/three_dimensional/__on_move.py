@@ -21,7 +21,8 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
     Shape.mouse_x = event.x
     Shape.mouse_y = event.y
 
-    if canvas_instance.mouse_pressed != 'Right':
-        return
+    if canvas_instance.mouse_pressed != '':
+        canvas_instance.dragging = True
 
-    canvas_instance.mouse_x, canvas_instance.mouse_y = event.x, event.y
+    if canvas_instance.mouse_pressed == 'Right':
+        canvas_instance.mouse_x, canvas_instance.mouse_y = event.x, event.y

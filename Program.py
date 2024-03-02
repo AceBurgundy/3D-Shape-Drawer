@@ -33,4 +33,6 @@ class App(CTk):
 
         self.canvas: Canvas = Canvas(self)
         self.canvas.grid(row=0, column=1, padx=BOTTOM_PADDING_ONLY, pady=DEFAULT_PADDING, sticky="nsew")
+
+        self.bind("<KeyRelease>", lambda event: self.canvas.key_released(event))
         self.bind("<Key>", lambda event: self.canvas.key_pressed(event))

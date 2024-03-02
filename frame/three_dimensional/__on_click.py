@@ -50,3 +50,7 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
                 break
 
         print(f"Clicked {selected_shape}" if selected_shape else f"Color in this coordinate is {clicked_rgb}")
+
+        """
+        If shape is selected, and r is being held, set the shapes self.rotate_shape to true, and false when released
+        """
