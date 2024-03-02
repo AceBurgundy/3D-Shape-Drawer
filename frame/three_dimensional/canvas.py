@@ -8,10 +8,11 @@ if TYPE_CHECKING:
     from geometry.shapes import Shape
     from Program import App
 
-from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, gluPerspective, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd
+from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd
 from OpenGL.GL import GL_FRAMEBUFFER_COMPLETE, GL_COLOR_BUFFER_BIT, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER, GL_COLOR_ATTACHMENT0, GL_MODELVIEW_MATRIX, GL_DEPTH_BUFFER_BIT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_TEXTURE_2D, GL_PROJECTION, GL_MODELVIEW, GL_NEAREST, GL_LINES, GL_RGB
-from typing import Type, List
+from OpenGL.GLU import gluPerspective
 from tkinter import Event
+from typing import List
 from math import *
 import pyopengltk
 

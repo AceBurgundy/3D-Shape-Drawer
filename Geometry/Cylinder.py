@@ -23,7 +23,7 @@ class Cylinder(Shape):
         self.slices: int = slices
 
     @override
-    def __change_shape(self, increment: bool = True) -> None:
+    def change_shape(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the cube by Shape.default_increment units.
 

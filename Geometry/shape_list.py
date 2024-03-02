@@ -13,4 +13,4 @@ def shape_class_references() -> Dict[str, Callable]:
     """
     Returns a dictionary with shape names and their class instance
     """
-    return { shape_class_reference.__class__.__name__: shape_class_reference for shape_class_reference in Shape.__subclasses__ }
+    return { shape_class_reference.__name__: shape_class_reference for shape_class_reference in Shape.__subclasses__() }

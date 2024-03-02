@@ -85,19 +85,19 @@ class Shape(ABC):
         glPopMatrix()
         glFlush()
 
-    @abstractmethod
-    def within_bounds(self) -> bool:
-        """
-        Checks if the given coordinates are within the bounds of the shape.
+    # @abstractmethod
+    # def within_bounds(self) -> bool:
+    #     """
+    #     Checks if the given coordinates are within the bounds of the shape.
 
-        Args:
-            mouse_x (int): The x-coordinate of the mouse cursor.
-            mouse_y (int): The y-coordinate of the mouse cursor.
+    #     Args:
+    #         mouse_x (int): The x-coordinate of the mouse cursor.
+    #         mouse_y (int): The y-coordinate of the mouse cursor.
 
-        Returns:
-            bool: True if the coordinates are within the bounds of the shape, False otherwise.
-        """
-        pass
+    #     Returns:
+    #         bool: True if the coordinates are within the bounds of the shape, False otherwise.
+    #     """
+    #     pass
 
     @abstractmethod
     def draw(self, offscreen: bool = False) -> None:
@@ -146,7 +146,7 @@ class Shape(ABC):
         glEnd()
 
     @abstractmethod
-    def __change_shape(self, increment: bool=True) -> None:
+    def change_shape(self, increment: bool=True) -> None:
         """
         Increases or decreases the size of the shape by 5 pixels.
         """
@@ -156,13 +156,13 @@ class Shape(ABC):
         """
         Increase the size of the shape by 5 pixels.
         """
-        self.__change_shape()
+        self.change_shape()
 
     def decrease_shape(self) -> None:
         """
         Decrease the size of the shape by 5 pixels.
         """
-        self.__change_shape(False)
+        self.change_shape(False)
 
     def rotate(self) -> None:
         """

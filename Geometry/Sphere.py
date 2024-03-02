@@ -23,7 +23,7 @@ class Sphere(Shape):
         self.stacks: int = stacks
 
     @override
-    def __change_shape(self, increment: bool = True) -> None:
+    def change_shape(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the sphere by Shape.default_increment units.
 

@@ -20,7 +20,7 @@ class Pyramid(Shape):
         self.height: NUMBER = height
 
     @override
-    def __change_shape(self, increment: bool = True) -> None:
+    def change_shape(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the pyramid by Shape.default_increment units.
 
