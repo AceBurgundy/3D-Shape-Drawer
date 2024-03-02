@@ -17,6 +17,7 @@ class Cube(Shape):
             height (NUMBER): the height of the cube. Defaults to 2
             depth (NUMBER): the depth of the cube. Defaults to 3
         """
+        super().__init__()
         self.width: NUMBER = width
         self.height: NUMBER = height
         self.depth: NUMBER = depth

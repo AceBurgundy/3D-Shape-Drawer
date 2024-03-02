@@ -40,9 +40,6 @@ class Shape(ABC):
         # list of vertex (for creating dots)
         self.vertices: VERTICES = []
 
-        if Shape.mouse_x < 0 and Shape.mouse_y < 0:
-            raise Exception("Set the mouse_x and mouse_y by connecting it to the canvas")
-
     @staticmethod
     def new_rgb() -> RGB:
         """

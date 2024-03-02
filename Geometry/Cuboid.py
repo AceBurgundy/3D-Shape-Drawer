@@ -17,6 +17,7 @@ class Cuboid(Shape):
             height (NUMBER): the height of the cuboid. Defaults to 35
             depth (NUMBER): the depth of the cuboid. Defaults to 35
         """
+        super().__init__()
         self.width: NUMBER = width
         self.height: NUMBER = height
         self.depth: NUMBER = depth

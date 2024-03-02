@@ -16,6 +16,7 @@ class Pyramid(Shape):
             base_length (NUMBER): the length of the base of the pyramid. Defaults to 1.0
             height (NUMBER): the height of the pyramid. Defaults to 2.0
         """
+        super().__init__()
         self.base_length: NUMBER = base_length
         self.height: NUMBER = height
 

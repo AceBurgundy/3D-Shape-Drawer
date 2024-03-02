@@ -18,6 +18,7 @@ class Cylinder(Shape):
             height (NUMBER): the height of the sphere. Defaults to 2.0
             slices (NUMBER): the slices of the sphere. Defaults to 3
         """
+        super().__init__()
         self.radius: NUMBER = radius
         self.height: NUMBER = height
         self.slices: int = slices

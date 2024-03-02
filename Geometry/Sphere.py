@@ -18,6 +18,7 @@ class Sphere(Shape):
             slices (NUMBER): the slices of the sphere. Defaults to 35
             stacks (NUMBER): the stacks of the sphere. Defaults to 35
         """
+        super().__init__()
         self.radius: NUMBER = radius
         self.slices: int = slices
         self.stacks: int = stacks

@@ -18,6 +18,7 @@ class Cone(Shape):
             height (NUMBER): the height of the cone. Defaults to 2.0
             slices (NUMBER): the slices of the cone. Defaults to 3
         """
+        super().__init__()
         self.radius: float = radius
         self.height: float = height
         self.slices: int = slices
