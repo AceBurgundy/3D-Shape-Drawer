@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from Frame.Render_3D import Canvas
+from frame.three_dimensional.canvas import Canvas
 
 if TYPE_CHECKING:
     from Navigation import Navigation
