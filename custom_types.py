@@ -2,7 +2,7 @@ from typing import List, Tuple, TypeAlias, Optional
 
 NUMBER: TypeAlias = int|float
 
-VERTEX: TypeAlias = Tuple[int, int, int]
+VERTEX: TypeAlias = Tuple[NUMBER, NUMBER, NUMBER]
 VERTICES: TypeAlias = List[VERTEX]
 
 EDGE: TypeAlias = Tuple[int, int]
