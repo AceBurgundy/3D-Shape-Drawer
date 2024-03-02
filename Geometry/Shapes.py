@@ -123,7 +123,7 @@ class Shape(ABC):
         for vertex in self.vertices:
             self.draw_dot_at(*vertex)
 
-    def draw_dot_at(self, x: int, y: int, z: int) -> None:
+    def draw_dot_at(self, x: NUMBER, y: NUMBER, z: NUMBER) -> None:
         """
         Draw a circle at the specified (x, y, z) coordinate.
 
