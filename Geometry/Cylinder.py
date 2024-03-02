@@ -1,7 +1,7 @@
 from OpenGL.GLU import gluNewQuadric, GLU_FILL, gluCylinder, gluQuadricDrawStyle, GLU_LINE
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
+from typing import Any, override
 from OpenGL.GL import glColor3f
-from typing import override
 from math import *
 
 from custom_types import *
@@ -9,7 +9,7 @@ from constants import *
 
 class Cylinder(Shape):
 
-    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: NUMBER = 3) -> None:
+    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: int = 3) -> None:
         """
         Initializes the sphere
 
@@ -20,7 +20,7 @@ class Cylinder(Shape):
         """
         self.radius: NUMBER = radius
         self.height: NUMBER = height
-        self.slices: NUMBER = slices
+        self.slices: int = slices
 
     @override
     def __change_shape(self, increment: bool = True) -> None:
@@ -35,13 +35,13 @@ class Cylinder(Shape):
             self.height += Shape.default_increment
             self.slices += Shape.default_increment
         else:
-            if self.width > Shape.default_increment and self.height > Shape.default_increment and self.depth > Shape.default_increment:
+            if self.radius > Shape.default_increment and self.height > Shape.default_increment:
                 self.radius -= Shape.default_increment
                 self.height -= Shape.default_increment
                 self.slices -= Shape.default_increment
 
     @override
-    def draw(self, offscreen) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Draws the cylinder
 
@@ -52,7 +52,7 @@ class Cylinder(Shape):
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         quadric = gluNewQuadric()
-        cylinder_arguments: Tuple[any, NUMBER, NUMBER, NUMBER] = (
+        cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
             quadric,
             self.radius, self.radius,
             self.height,

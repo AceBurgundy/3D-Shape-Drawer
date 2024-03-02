@@ -1,5 +1,5 @@
 from OpenGL.GL import glBegin, GL_TRIANGLES, glVertex3f, glEnd, glColor3f, GL_LINE_LOOP
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
 from typing import override
 from math import *
 
@@ -36,7 +36,7 @@ class Pyramid(Shape):
                 self.height -= Shape.default_increment
 
     @override
-    def draw(self, offscreen) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Draws a pyramid
 
@@ -54,19 +54,12 @@ class Pyramid(Shape):
         back_right: VERTEX = (self.base_length / 2, 0.0, -self.base_length / 2)
         back_left: VERTEX = (-self.base_length / 2, 0.0, -self.base_length / 2)
 
-        self.vertices: VERTICES = (
-            top_point,
-            front_left, front_right,
-
-            top_point,
-            front_right, back_right,
-
-            top_point,
-            back_right, back_left,
-
-            top_point,
-            back_left, front_left
-        )
+        self.vertices: VERTICES = [
+            top_point, front_left, front_right,
+            top_point, front_right, back_right,
+            top_point, back_right, back_left,
+            top_point, back_left, front_left
+        ]
 
         for vertex in self.vertices:
             glVertex3f(*vertex)
@@ -77,9 +70,7 @@ class Pyramid(Shape):
             glColor3f(*self.grid_color)
             glBegin(GL_LINE_LOOP)
 
-            corners: VERTICES = (front_left, front_right, back_right, back_left)
-
-            for corner in corners:
+            for corner in [front_left, front_right, back_right, back_left]:
                 glVertex3f(*corner)
 
             glEnd()

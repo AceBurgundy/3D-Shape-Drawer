@@ -5,14 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Frame.Render_3D import Canvas
+    from frame.three_dimensional.canvas import Canvas
 
-from Geometry.Shapes import Shape
+from OpenGL.GL import glBindFramebuffer, glBindFramebuffer, glPixelStorei, glReadPixels, glReadBuffer, GL_COLOR_ATTACHMENT0, GL_PACK_ALIGNMENT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_RGB, GL_FRAMEBUFFER
+from geometry.shapes import Shape
 from custom_types import RGB
 from tkinter import Event
 from typing import List
-
-from OpenGL.GL import *
 
 def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
     """
@@ -38,7 +37,7 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
 
         pixel_data = glReadPixels(mouse_x, mouse_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
-        clicked_rgb: RGB = [pixel_data[0][0]]
+        clicked_rgb = [pixel_data[0][0]]
 
         # Unbind the offscreen framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0)

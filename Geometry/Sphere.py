@@ -1,6 +1,6 @@
 from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluQuadricDrawStyle, gluSphere, gluNewQuadric, gluQuadricDrawStyle, GLU_LINE, gluSphere
 from OpenGL.GL import glColor3f, glColor3f
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
 from typing import override
 from math import *
 
@@ -9,7 +9,7 @@ from constants import *
 
 class Sphere(Shape):
 
-    def __init__(self, radius: NUMBER = 1.5, slices: NUMBER = 3, stacks: NUMBER = 30) -> None:
+    def __init__(self, radius: NUMBER = 1.5, slices: int = 3, stacks: int = 30) -> None:
         """
         Initializes the sphere
 
@@ -19,8 +19,8 @@ class Sphere(Shape):
             stacks (NUMBER): the stacks of the sphere. Defaults to 35
         """
         self.radius: NUMBER = radius
-        self.slices: NUMBER = slices
-        self.stacks: NUMBER = stacks
+        self.slices: int = slices
+        self.stacks: int = stacks
 
     @override
     def __change_shape(self, increment: bool = True) -> None:
@@ -37,7 +37,7 @@ class Sphere(Shape):
                 self.radius -= Shape.default_increment
 
     @override
-    def draw(self, offscreen) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Draws the sphere
 

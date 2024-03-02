@@ -1,5 +1,5 @@
 from OpenGL.GL import glBegin, GL_QUADS, glColor3f, GL_LINES, glVertex3fv, glEnd
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
 from typing import override
 from math import *
 
@@ -21,6 +21,10 @@ class Cube(Shape):
         self.height: NUMBER = height
         self.depth: NUMBER = depth
 
+        self.half_width: NUMBER = width / 2
+        self.half_height: NUMBER = height / 2
+        self.half_depth: NUMBER = depth / 2
+
     @override
     def __change_shape(self, increment: bool = True) -> None:
         """
@@ -40,7 +44,7 @@ class Cube(Shape):
                 self.depth -= Shape.default_increment
 
     @override
-    def draw(self, offscreen) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Draws a cube
 

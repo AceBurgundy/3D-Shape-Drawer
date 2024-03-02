@@ -5,13 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Geometry.Shapes import Shape
+    from geometry.shapes import Shape
     from Program import App
 
+from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, gluPerspective, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd
+from OpenGL.GL import GL_FRAMEBUFFER_COMPLETE, GL_COLOR_BUFFER_BIT, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER, GL_COLOR_ATTACHMENT0, GL_MODELVIEW_MATRIX, GL_DEPTH_BUFFER_BIT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_TEXTURE_2D, GL_PROJECTION, GL_MODELVIEW, GL_NEAREST, GL_LINES, GL_RGB
 from typing import Type, List
 from tkinter import Event
-from OpenGL.GLU import *
-from OpenGL.GL import *
 from math import *
 import pyopengltk
 
@@ -30,7 +30,7 @@ class Canvas(pyopengltk.OpenGLFrame):
 
     camera_sensitivity: float = 0.8
     grid_noise: float = 0.0
-    shapes: List[Type[Shape]] = []
+    shapes: List[Shape] = []
     terrain_drawn: bool = False
 
     width: int = 0
@@ -63,7 +63,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         self.mouse_y: int = 0
         self.prev_mouse_x: int = 0
         self.prev_mouse_y: int = 0
-        self.mouse_pressed: bool = None
+        self.mouse_pressed: str = ''
 
         self.camera_y_translate: float = 0.0
         self.camera_x_translate: float = 0.0
@@ -122,7 +122,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         if type(noise) != 'float':
             raise Exception("noise parameter for drawing terain only accepts floating point values")
 
-        Shape.terrain_drawn = True
+        Canvas.terrain_drawn = True
         glColor3f(0.5, 0.5, 0.5)
         glBegin(GL_LINES)
 

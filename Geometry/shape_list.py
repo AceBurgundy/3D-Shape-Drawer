@@ -1,11 +1,11 @@
-from Geometry.Cylinder import Cylinder
-from Geometry.Pyramid import Pyramid
-from Geometry.Cuboid import Cuboid
-from Geometry.Sphere import Sphere
-from Geometry.Cone import Cone
-from Geometry.Cube import Cube
+from geometry.cylinder import Cylinder
+from geometry.pyramid import Pyramid
+from geometry.cuboid import Cuboid
+from geometry.sphere import Sphere
+from geometry.cone import Cone
+from geometry.cube import Cube
 
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
 
 from typing import Dict, Callable
 

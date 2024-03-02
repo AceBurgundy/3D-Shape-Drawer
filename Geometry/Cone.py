@@ -1,7 +1,7 @@
 from OpenGL.GLU import gluQuadricDrawStyle, gluNewQuadric, gluCylinder, GLU_FILL, GLU_LINE
-from Geometry.Shapes import Shape
+from geometry.shapes import Shape
+from typing import Any, override
 from OpenGL.GL import glColor3f
-from typing import override
 from math import *
 
 from custom_types import *
@@ -9,7 +9,7 @@ from constants import *
 
 class Cone(Shape):
 
-    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: NUMBER = 30) -> None:
+    def __init__(self, radius: float = 1.0, height: float = 2.0, slices: int = 30) -> None:
         """
         Initializes the cone
 
@@ -18,9 +18,9 @@ class Cone(Shape):
             height (NUMBER): the height of the cone. Defaults to 2.0
             slices (NUMBER): the slices of the cone. Defaults to 3
         """
-        self.radius: NUMBER = radius
-        self.height: NUMBER = height
-        self.slices: NUMBER = slices
+        self.radius: float = radius
+        self.height: float = height
+        self.slices: int = slices
 
     @override
     def __change_shape(self, increment: bool = True) -> None:
@@ -39,7 +39,7 @@ class Cone(Shape):
                 self.height -= Shape.default_increment
 
     @override
-    def draw(self, offscreen) -> None:
+    def draw(self, offscreen: bool = False) -> None:
         """
         Draws a cylinder
 
@@ -50,7 +50,7 @@ class Cone(Shape):
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         quadric = gluNewQuadric()
-        cone_arguments: Tuple[any, 0, NUMBER, NUMBER, NUMBER, NUMBER] = (
+        cone_arguments: Tuple[Any, Literal[0], float, float, NUMBER, NUMBER] = (
             quadric, 0, self.radius, self.height, self.slices, self.slices
         )
 
