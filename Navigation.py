@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict
 
-from Geometry.shape_list import shape_class_references
+from geometry.shape_list import shape_class_references
 
 if TYPE_CHECKING:
     from Program import App
 
-from Frame.Render_3D import Canvas
-from Geometry.Shapes import Shape
+from frame.three_dimensional.canvas import Canvas
+from geometry.shapes import Shape
 from ShapeButton import ShapeButton
 from customtkinter import *
 from constants import *
