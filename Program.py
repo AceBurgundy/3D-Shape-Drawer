@@ -1,5 +1,5 @@
 
-from Frame.Render_3D import Canvas
+from frame.three_dimensional.canvas import Canvas
 from Navigation import Navigation
 from customtkinter import CTk
 
