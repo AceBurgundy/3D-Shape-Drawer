@@ -1,4 +1,4 @@
-from OpenGL.GL import glBegin, GL_QUADS, glColor3f, GL_LINES, glVertex3fv, glEnd
+from OpenGL.GL import GL_QUADS, GL_LINES, glVertex3fv, glBegin, glEnd, glColor3f
 from geometry.shapes import Shape
 from typing import override
 from math import *
@@ -22,12 +22,20 @@ class Cube(Shape):
         self.height: NUMBER = height
         self.depth: NUMBER = depth
 
-        self.half_width: NUMBER = width / 2
-        self.half_height: NUMBER = height / 2
-        self.half_depth: NUMBER = depth / 2
+    @property
+    def half_width(self) -> float:
+        return self.width / 2
+
+    @property
+    def half_height(self) -> float:
+        return self.height / 2
+
+    @property
+    def half_depth(self) -> float:
+        return self.depth / 2
 
     @override
-    def change_shape(self, increment: bool = True) -> None:
+    def resize(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the cube by Shape.default_increment units.
 
@@ -63,7 +71,7 @@ class Cube(Shape):
             (-self.half_width, self.half_height, self.half_depth)     # Vertex 7
         ]
 
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
+        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         glBegin(GL_QUADS)
@@ -79,8 +87,11 @@ class Cube(Shape):
                 glVertex3fv(self.vertices[vertex])
 
         glEnd()
-        self.draw_grid()
 
+        if not offscreen and self.selected:
+            self.draw_grid()
+
+    @override
     def draw_grid(self) -> None:
         """
         Draws a grid that is wrapping up the cube
