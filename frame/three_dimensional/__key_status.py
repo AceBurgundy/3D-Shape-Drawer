@@ -19,7 +19,7 @@ def __get_key_status(event: Event):
             if '|' in state_value:
                 result['state'] = state_value.split('|')
 
-            elif state_value != '0x40000':
+            elif state_value != '0x40000' and state_value != 'Mod1':
                 result['state'] = [state_value]
 
         if 'keysym=' in part:
