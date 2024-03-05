@@ -1,6 +1,5 @@
-from OpenGL.GLU import gluNewQuadric, GLU_FILL, gluCylinder, gluQuadricDrawStyle, GLU_LINE
-from OpenGL.GL import glColor3f, glDisable, GL_BLEND, GL_CURRENT_BIT
-from OpenGL.GL import glBegin, glEnd, glLineWidth, GL_LINES, glVertex3f
+from OpenGL.GL import GL_LINES, GL_BLEND, glBegin, glEnd, glVertex3f, glColor3f, glDisable
+from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluCylinder, gluQuadricDrawStyle
 from geometry.shapes import Shape
 from typing import Any, override
 from math import *
@@ -25,7 +24,7 @@ class Cylinder(Shape):
         self.slices: int = slices
 
     @override
-    def change_shape(self, increment: bool = True) -> None:
+    def resize(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the cube by Shape.default_increment units.
 
@@ -50,10 +49,8 @@ class Cylinder(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
+        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
-
-        glDisable(GL_BLEND)
 
         quadric = gluNewQuadric()
         cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
@@ -64,9 +61,10 @@ class Cylinder(Shape):
         )
 
         gluQuadricDrawStyle(quadric, GLU_FILL)
-        # gluCylinder( quad , base , top , height , slices , stacks )
         gluCylinder(*cylinder_arguments)
-        self.draw_grid()
+
+        if not offscreen and self.selected:
+            self.draw_grid()
 
     @override
     def draw_grid(self) -> None:

@@ -1,4 +1,4 @@
-from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluQuadricDrawStyle, gluSphere, gluNewQuadric, gluQuadricDrawStyle, GLU_LINE, gluSphere
+from OpenGL.GLU import GLU_FILL, GLU_LINE, gluNewQuadric, gluQuadricDrawStyle, gluSphere, gluNewQuadric, gluQuadricDrawStyle, gluSphere
 from OpenGL.GL import glColor3f, glColor3f
 from geometry.shapes import Shape
 from typing import override
@@ -24,7 +24,7 @@ class Sphere(Shape):
         self.stacks: int = stacks
 
     @override
-    def change_shape(self, increment: bool = True) -> None:
+    def resize(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the sphere by Shape.default_increment units.
 
@@ -45,14 +45,17 @@ class Sphere(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
+        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         quadric = gluNewQuadric()
         gluQuadricDrawStyle(quadric, GLU_FILL)
         gluSphere(quadric, self.radius, self.slices, self.stacks)
-        self.draw_grid()
 
+        if not offscreen and self.selected:
+            self.draw_grid()
+
+    @override
     def draw_grid(self) -> None:
         """
         Draws a grid that is wrapping up the sphere

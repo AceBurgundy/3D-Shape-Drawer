@@ -1,6 +1,6 @@
-from OpenGL.GL import glBegin, GL_TRIANGLES, glVertex3f, glEnd, glColor3f, GL_LINE_LOOP, GL_LINES
+from OpenGL.GL import GL_TRIANGLES, GL_LINE_LOOP, GL_LINES, glVertex3f, glBegin, glEnd, glColor3f
+from typing import Optional, override
 from geometry.shapes import Shape
-from typing import Optional
 from custom_types import *
 from constants import *
 
@@ -19,7 +19,7 @@ class Pyramid(Shape):
         self.height: NUMBER = height
         self.corners: Optional[VERTICES] = None
 
-    def change_shape(self, increment: bool = True) -> None:
+    def resize(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the pyramid by Shape.default_increment units.
 
@@ -41,7 +41,7 @@ class Pyramid(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
+        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         glBegin(GL_TRIANGLES)
@@ -65,8 +65,11 @@ class Pyramid(Shape):
             glVertex3f(*vertex)
 
         glEnd()
-        self.draw_grid()
 
+        if not offscreen and self.selected:
+            self.draw_grid()
+
+    @override
     def draw_grid(self) -> None:
         """
         Draws a grid that is wrapping up the pyramid
