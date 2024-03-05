@@ -6,11 +6,16 @@ from geometry.cone import Cone
 from geometry.cube import Cube
 
 from geometry.shapes import Shape
-
-from typing import Dict, Callable
+from typing import Dict, Callable, List
 
 def shape_class_references() -> Dict[str, Callable]:
     """
     Returns a dictionary with shape names and their class instance
     """
     return { shape_class_reference.__name__: shape_class_reference for shape_class_reference in Shape.__subclasses__() }
+
+def shape_names() -> List[str]:
+    """
+    Returns a dictionary with shape names and their class instance
+    """
+    return list(shape_class_references().keys())
