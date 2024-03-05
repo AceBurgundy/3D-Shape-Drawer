@@ -30,4 +30,11 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
         canvas_instance.dragging = True
 
     if canvas_instance.mouse_pressed == 'Right':
-        canvas_instance.mouse_x, canvas_instance.mouse_y = event.x, event.y
+        delta_x: float = event.x - canvas_instance.previous_mouse_x
+        delta_y: float = event.y - canvas_instance.previous_mouse_y
+
+        canvas_instance.camera_x += delta_x
+        canvas_instance.camera_y += delta_y
+
+    canvas_instance.previous_mouse_x = event.x
+    canvas_instance.previous_mouse_y = event.y
