@@ -32,9 +32,11 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
 
         if held_both:
             __handle_shift_and_control(canvas_instance, key)
+            return
 
         elif pressed_shift:
             __handle_shift(canvas_instance, key)
+            return
 
     if type(key == 'str'):
         __handle_key(canvas_instance, key)
