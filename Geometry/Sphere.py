@@ -1,11 +1,12 @@
-from OpenGL.GLU import GLU_FILL, GLU_LINE, gluNewQuadric, gluQuadricDrawStyle, gluSphere, gluNewQuadric, gluQuadricDrawStyle, gluSphere
-from OpenGL.GL import glColor3f, glColor3f
 from geometry.shapes import Shape
 from typing import override
 from math import *
 
 from custom_types import *
 from constants import *
+
+import OpenGL.GLU as GLU
+import OpenGL.GL as GL
 
 class Sphere(Shape):
 
@@ -46,11 +47,11 @@ class Sphere(Shape):
             offscreen (bool): If the shape will be rendered off screen
         """
         assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
-        glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
-        quadric = gluNewQuadric()
-        gluQuadricDrawStyle(quadric, GLU_FILL)
-        gluSphere(quadric, self.radius, self.slices, self.stacks)
+        quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+        GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -62,12 +63,16 @@ class Sphere(Shape):
         """
         super().draw_grid()
 
-        glColor3f(*self.grid_color)
-        quadric = gluNewQuadric()
-        gluQuadricDrawStyle(quadric, GLU_LINE)
-        gluSphere(quadric, self.radius, self.slices, self.stacks)
+        GL.glPushMatrix()
 
-        # used for mapping out all dots in the grid
+        # Requires rotation as dots on vertices dont match grid vertex
+        GL.glRotatef(-3.5, 0, 0, 1)
+        GL.glColor3f(*self.grid_color)
+        GLU.gluQuadricDrawStyle( GLU.gluNewQuadric(), GLU.GLU_LINE)
+        GLU.gluSphere( GLU.gluNewQuadric(), self.radius, self.slices, self.stacks)
+        GL.glPopMatrix()
+
+        # Used for mapping out all dots in the grid
         for stack in range(self.stacks + 1):
             phi: NUMBER = pi * stack / self.stacks
             for slice_ in range(self.slices + 1):
