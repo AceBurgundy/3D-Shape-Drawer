@@ -9,6 +9,9 @@ EDGE: TypeAlias = Tuple[int, int]
 EDGES: TypeAlias = Optional[List[EDGE]]
 
 RGB: TypeAlias = Tuple[float, float, float]
+RGBA: TypeAlias = Tuple[float, float, float, float]
+
 RGBS: TypeAlias = List[RGB]
+RGBAS: TypeAlias = List[RGBA]
 
 COORDINATE: TypeAlias = List[int]
