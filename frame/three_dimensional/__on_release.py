@@ -19,3 +19,5 @@ def on_mouse_released(canvas_instance: Canvas, event: Event):
     """
     canvas_instance.dragging = False
     canvas_instance.mouse_pressed = None
+    canvas_instance.previous_mouse_x = event.x
+    canvas_instance.previous_mouse_y = event.y
