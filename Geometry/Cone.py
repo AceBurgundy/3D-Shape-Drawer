@@ -1,5 +1,5 @@
-from OpenGL.GLU import gluQuadricDrawStyle, gluNewQuadric, gluCylinder, GLU_FILL, GLU_LINE
-from OpenGL.GL import glColor3f, glBegin, glEnd, GL_LINES, glVertex3f
+from OpenGL.GLU import GLU_FILL, gluQuadricDrawStyle, gluNewQuadric, gluCylinder
+from OpenGL.GL import GL_LINES, glColor3f, glBegin, glEnd, glVertex3f
 from geometry.shapes import Shape
 from typing import Any, override
 from math import *
@@ -24,7 +24,7 @@ class Cone(Shape):
         self.slices: int = slices
 
     @override
-    def change_shape(self, increment: bool = True) -> None:
+    def resize(self, increment: bool = True) -> None:
         """
         Increases or decreases the size of the cone by Shape.default_increment units.
 
@@ -47,7 +47,7 @@ class Cone(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.__class__.__name__]
+        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
         glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
         quadric = gluNewQuadric()
@@ -57,7 +57,9 @@ class Cone(Shape):
 
         gluQuadricDrawStyle(quadric, GLU_FILL)
         gluCylinder(*cone_arguments)
-        self.draw_grid()
+
+        if not offscreen and self.selected:
+            self.draw_grid()
 
     @override
     def draw_grid(self) -> None:
@@ -84,10 +86,7 @@ class Cone(Shape):
             x: float = self.radius * cos(angle)
             y: float = self.radius * sin(angle)
 
-            vertices: VERTICES = [
-                (x, y, 0),
-                (0, 0, self.height)
-            ]
+            vertices: VERTICES = [ (x, y, 0), (0, 0, self.height) ]
 
             for vertex in vertices:
                 glVertex3f(*vertex)
