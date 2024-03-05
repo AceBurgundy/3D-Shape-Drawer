@@ -20,6 +20,20 @@ def handle_key_released(canvas_instance: Canvas, event: Event) -> None:
     key: List[str]|str = press_status['key']
 
     if type(key == 'str'):
+        __handle_key(canvas_instance, key)
 
-        if key == 'r':
-            canvas_instance.pressed_key = ''
+def __handle_key(canvas_instance: Canvas, key: str) -> None:
+    """
+    Handles events where another key is being pressed.
+
+    Args:
+        canvas_instance (Canvas): The current running instance of the Canvas
+        event (Event): The Tkinter.Event that carries key pressed information
+    """
+    if key == 'r':
+        canvas_instance.pressed_key = ''
+
+        for shape in canvas_instance.shapes:
+            if shape.selected:
+                shape.rotate_shape = False
+                return
