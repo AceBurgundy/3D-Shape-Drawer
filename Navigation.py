@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Type, List
+from CTkToast import CTkToast
 
-from geometry.shape_list import shape_class_references
+from save import export_to_file, import_from_file
 
 if TYPE_CHECKING:
     from Program import App
 
+from geometry.shape_list import shape_class_references, shape_names
+from buttons.change_color_toggle import ColorPickerToggle
 from frame.three_dimensional.canvas import Canvas
 from geometry.shapes import Shape
-from ShapeButton import ShapeButton
+
 from customtkinter import *
 from constants import *
 
@@ -28,19 +31,25 @@ class Navigation(CTkFrame):
             TypeError: If the list of buttons is empty.
         """
         super().__init__(parent, **kwargs)
+        self.configure(fg_color='transparent')
 
-        camera_sensitivity_slider = CTkSlider(self, command=lambda value: setattr(Canvas, 'camera_sensitivity', value), from_=0, to=1, number_of_steps=10, width=100)
-        camera_sensitivity_slider.pack(pady= RIGHT_PADDING_ONLY, side="bottom")
-        camera_sensitivity_slider.set(0.8)
+        def add_shape(choice) -> None:
+            """
+            Adds shape to the canvas
 
-        camera_sensitivity_slider_title = CTkLabel(self, text='Sensitivity')
-        camera_sensitivity_slider_title.pack(side="bottom")
+            Args:
+                choice (str): The choice the user selected
+            """
+            shape_reference: Type[Shape] = shape_class_references().get(choice)
+            shape_instance: Type[Shape] = shape_reference()
+            Canvas.shapes.append(shape_instance)
 
-        buttons = shape_class_references()
+        buttons: List[Type[CTk]] = [
+            CTkOptionMenu(self, width=80, height=20, values=shape_names(), command=add_shape),
+            ColorPickerToggle(self, width=75, height=15, text="Color"),
+            CTkButton(self, width=75, height=15, text="Import", command=import_from_file),
+            CTkButton(self, width=75, height=15, text="Export", command=export_to_file)
+        ]
 
-        if len(buttons) == 0:
-            raise TypeError('Cannot pass a list of empty buttons')
-
-        for shape_name, shape_class_reference in buttons.items():
-            button: ShapeButton = ShapeButton(self, shape_name, shape_class_reference)
-            button.pack(pady=LEFT_PADDING_ONLY, padx=DEFAULT_PADDING)
+        for index, button in enumerate(buttons):
+            button.grid(row=0, column=index, padx=LEFT_PADDING_ONLY, pady=DEFAULT_PADDING)
