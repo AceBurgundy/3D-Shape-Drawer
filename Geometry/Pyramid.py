@@ -1,12 +1,14 @@
-from OpenGL.GL import GL_TRIANGLES, GL_LINE_LOOP, GL_LINES, glVertex3f, glBegin, glEnd, glColor3f
 from typing import Optional, override
 from geometry.shapes import Shape
 from custom_types import *
 from constants import *
 
+import OpenGL.GL as GLU
+import OpenGL.GL as GL
+
 class Pyramid(Shape):
 
-    def __init__(self, base_length: NUMBER = 5.0, height: NUMBER = 5.0) -> None:
+    def __init__(self, base_length: NUMBER = 3.0, height: NUMBER = 3.0) -> None:
         """
         Initializes the pyramid
 
@@ -42,15 +44,15 @@ class Pyramid(Shape):
             offscreen (bool): If the shape will be rendered off screen
         """
         assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
-        glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
-        glBegin(GL_TRIANGLES)
+        GL.glBegin(GL.GL_TRIANGLES)
 
-        top_point: VERTEX = (0.0, self.height, 0.0)
-        front_left: VERTEX = (-self.base_length / 2, 0.0, -self.base_length / 2)
-        front_right: VERTEX = (self.base_length / 2, 0.0, -self.base_length / 2)
-        back_right: VERTEX = (self.base_length / 2, 0.0, self.base_length / 2)
-        back_left: VERTEX = (-self.base_length / 2, 0.0, self.base_length / 2)
+        top_point: VERTEX = (0.0, 0.0, self.height)  # Swap y and z coordinates
+        front_left: VERTEX = (-self.base_length / 2, -self.base_length / 2, 0.0)
+        front_right: VERTEX = (self.base_length / 2, -self.base_length / 2, 0.0)
+        back_right: VERTEX = (self.base_length / 2, self.base_length / 2, 0.0)
+        back_left: VERTEX = (-self.base_length / 2, self.base_length / 2, 0.0)
 
         self.corners: VERTICES = [front_left, front_right, back_right, back_left]
 
@@ -62,9 +64,9 @@ class Pyramid(Shape):
         ]
 
         for vertex in self.vertices:
-            glVertex3f(*vertex)
+            GL.glVertex3f(*vertex)
 
-        glEnd()
+        GL.glEnd()
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -76,20 +78,16 @@ class Pyramid(Shape):
         """
         super().draw_grid()
 
-        glColor3f(*self.grid_color)
-        glBegin(GL_LINE_LOOP)
+        GL.glColor3f(*self.grid_color)
 
+        GL.glBegin(GL.GL_LINE_LOOP)
         for corner in self.corners:
-            glVertex3f(*corner)
+            GL.glVertex3f(*corner)
+            GL.glVertex3f(*self.vertices[0])
+        GL.glEnd()
 
-        glEnd()
-
-        # Connect the corners to the top point
-        glBegin(GL_LINES)
-        for corner in self.corners:
-            glVertex3f(*corner)
-            glVertex3f(0.0, self.height, 0.0)
-        glEnd()
-
-        for vertex in self.vertices:
-            self.draw_dot_at(*vertex)
+        GL.glBegin(GL.GL_LINES)
+        for index in range(len(self.corners)):
+            GL.glVertex3f(*self.corners[index])
+            GL.glVertex3f(*self.corners[(index + 1) % len(self.corners)])
+        GL.glEnd()
