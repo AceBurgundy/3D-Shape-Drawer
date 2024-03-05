@@ -21,6 +21,11 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
     Shape.mouse_x = event.x
     Shape.mouse_y = event.y
 
+    if canvas_instance.pressed_key == 'r':
+        for shape in canvas_instance.shapes:
+            if shape.selected:
+                shape.rotate_shape = True
+
     if canvas_instance.mouse_pressed != '':
         canvas_instance.dragging = True
 
