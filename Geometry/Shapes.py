@@ -2,7 +2,7 @@ from OpenGL.GL import glDisable, glPopMatrix, glFlush, glVertex3f, glPushMatrix,
 from OpenGL.GLU import gluNewQuadric, gluQuadricDrawStyle, GLU_FILL, gluSphere
 from abc import ABC, abstractmethod
 from random import random
-from typing import Dict
+from typing import Callable, Dict
 from math import *
 
 from custom_types import *
@@ -14,9 +14,11 @@ class Shape(ABC):
     """
 
     default_increment: int = 10
-    buffer_colors: Dict[str, RGB] = {}
+    buffer_colors: Dict[int, RGB] = {}
     mouse_x: int = -1
     mouse_y: int = -1
+    previous_mouse_x: int = -1
+    previous_mouse_y: int = -1
 
     def __init__(self) -> None:
         """
@@ -25,13 +27,17 @@ class Shape(ABC):
         # assigns a name for the random color
         # example: for a new child class created it will be assigned as
         # Cone: (1.0, 0.3, 0.9)
-        Shape.buffer_colors[self.__class__.__name__] = Shape.new_rgb()
+        shape_ids: List[int] = list(Shape.buffer_colors.keys())
 
-        self.selected: bool = True
-        self.show_grid: bool = True
+        self.id: int = 0 if len(shape_ids) <= 0 else len(shape_ids) + 1
+        Shape.buffer_colors[self.id] = Shape.new_rgb()
+
+        self.selected: bool = False
+        self.show_grid: bool = False
 
         self.background_color: RGB = GREY
-        self.grid_color: RGB = ORANGE if self.selected else BLACK
+        self.grid_color: RGB = BLACK
+
         self.rotate_shape: bool = False
 
         self.angle: NUMBER = 0
@@ -51,10 +57,12 @@ class Shape(ABC):
         Returns:
         Tuple: A Tuple containing three random float values between 0.0 and 1.0 representing RGB color.
         """
-        new_color: RGB = (random(), random(), random())
+        color: Callable = lambda: round(random(), 2)
+
+        new_color: RGB = (color(), color(), color())
 
         while new_color in Shape.buffer_colors.values():
-            new_color = (random(), random(), random())
+            new_color = (color(), color(), color())
 
         return new_color
 
@@ -69,38 +77,41 @@ class Shape(ABC):
         # Not doing so will cause the vertices size to increase slowing the app
         self.vertices = []
 
-        if self.selected and self.rotate_shape:
-            # To keep track of rotation
-            glPushMatrix()  # Save the current matrix
-            glTranslatef(self.x, self.y, self.z)  # Translate to the center of the shape
-            glRotatef(Shape.mouse_x, 1, 0, 0)  # Rotate around the x-axis
-            glRotatef(Shape.mouse_y, 0, 1, 0)  # Rotate around the y-axis
-            glTranslatef(-self.x, -self.y, -self.z)  # Translate back to the original position
+        if self.selected:
 
-            self.draw(offscreen)
+            if self.rotate_shape:
+                """
+                Saves matrix, rotates shape, draws it and pops back the matrix.
+                """
 
-            if not offscreen:
-                self.draw_grid()
+                # Use the previous mouse coordinates or it will snap back to 0,0 after rotating
+                Shape.previous_mouse_x = Shape.mouse_x
+                Shape.previous_mouse_y = Shape.mouse_y
 
-            glPopMatrix()
-            glFlush()
-            return
+                glPushMatrix()
+                glTranslatef(self.x, self.y, self.z)
+                glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+                glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+                glTranslatef(-self.x, -self.y, -self.z)
 
+                self.draw(offscreen)
+
+                glPopMatrix()
+                glFlush()
+                return
+
+        glPushMatrix()
+
+        # Apply rotation from key press movements
+        glTranslatef(self.x, self.y, self.z)
+
+        # Rotate to the updated angle after rotation or it will snap back to 0,0
+        glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+        glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
         self.draw(offscreen)
 
-    # @abstractmethod
-    # def within_bounds(self) -> bool:
-    #     """
-    #     Checks if the given coordinates are within the bounds of the shape.
-
-    #     Args:
-    #         mouse_x (int): The x-coordinate of the mouse cursor.
-    #         mouse_y (int): The y-coordinate of the mouse cursor.
-
-    #     Returns:
-    #         bool: True if the coordinates are within the bounds of the shape, False otherwise.
-    #     """
-    #     pass
+        glPopMatrix()
+        glFlush()
 
     @abstractmethod
     def draw(self, offscreen: bool = False) -> None:
@@ -139,23 +150,11 @@ class Shape(ABC):
         glPopMatrix()
 
     @abstractmethod
-    def change_shape(self, increment: bool=True) -> None:
+    def resize(self, increment: bool=True) -> None:
         """
-        Increases or decreases the size of the shape by 5 pixels.
+        Increases or decreases the size of the shape by several pixels.
         """
         raise NotImplementedError()
-
-    def increase_shape(self) -> None:
-        """
-        Increase the size of the shape by 5 pixels.
-        """
-        self.change_shape()
-
-    def decrease_shape(self) -> None:
-        """
-        Decrease the size of the shape by 5 pixels.
-        """
-        self.change_shape(False)
 
     def rotate(self) -> None:
         """
@@ -193,34 +192,35 @@ class Shape(ABC):
         """
         Moves shape up
         """
-        self.y += Shape.default_increment
+        self.z += Shape.default_increment
 
     def move_down(self) -> None:
         """
         Moves shape down
         """
-        self.y -= Shape.default_increment
+        self.z -= Shape.default_increment
 
     def move_forward(self) -> None:
         """
-        Moves shape forward
+        Moves shape forward (away from the viewer along the positive Z-axis)
         """
-        self.z += Shape.default_increment
+        self.y += Shape.default_increment
 
     def move_backward(self) -> None:
         """
-        Moves shape backward
+        Moves shape backward (closer to the viewer along the negative Z-axis)
         """
-        self.z -= Shape.default_increment
+        self.y -= Shape.default_increment
 
     def move_left(self) -> None:
         """
-        Moves shape left
+        Moves shape left (along the negative X-axis)
         """
         self.x -= Shape.default_increment
 
     def move_right(self) -> None:
         """
-        Moves shape right
+        Moves shape right (along the positive X-axis)
         """
         self.x += Shape.default_increment
+
