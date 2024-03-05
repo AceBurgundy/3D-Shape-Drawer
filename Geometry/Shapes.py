@@ -14,7 +14,7 @@ class Shape(ABC):
     Abstract base class representing a 3D geometric shape.
     """
 
-    default_increment: int = 10
+    default_increment: int = 1
     buffer_colors: Dict[int, RGB] = {}
     mouse_x: int = -1
     mouse_y: int = -1
@@ -109,7 +109,10 @@ class Shape(ABC):
         # Rotate to the updated angle after rotation or it will snap back to 0,0
         GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
         GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+
+        GL.glLineWidth(1.2) # Thickens the border width
         self.draw(offscreen)
+        GL.glLineWidth(1.0)
 
         GL.glPopMatrix()
         GL.glFlush()
@@ -178,14 +181,14 @@ class Shape(ABC):
             hex_color (str): The hexadecimal color string (e.g., "#051dff").
 
         Returns:
-            Tuple: A Tuple of RGB floats in the range [0.0, 1.0] representing the color.
+            None
         """
         # Remove '#' from the beginning if present
         hex_color = hex_color.lstrip('#')
 
-        red: int = int(hex_color[0:2], 16)
-        green: int = int(hex_color[2:4], 16)
-        blue: int = int(hex_color[4:6], 16)
+        red: float = round(int(hex_color[0:2], 16) / 255.0, 2)
+        green: float = round(int(hex_color[2:4], 16) / 255.0, 2)
+        blue: float = round(int(hex_color[4:6], 16) / 255.0, 2)
 
         self.background_color = (red, green, blue)
 
@@ -194,34 +197,39 @@ class Shape(ABC):
         Moves shape up
         """
         self.z += Shape.default_increment
+        return
 
     def move_down(self) -> None:
         """
         Moves shape down
         """
         self.z -= Shape.default_increment
+        return
 
     def move_forward(self) -> None:
         """
         Moves shape forward (away from the viewer along the positive Z-axis)
         """
         self.y += Shape.default_increment
+        return
 
     def move_backward(self) -> None:
         """
         Moves shape backward (closer to the viewer along the negative Z-axis)
         """
         self.y -= Shape.default_increment
+        return
 
     def move_left(self) -> None:
         """
         Moves shape left (along the negative X-axis)
         """
         self.x -= Shape.default_increment
+        return
 
     def move_right(self) -> None:
         """
         Moves shape right (along the positive X-axis)
         """
         self.x += Shape.default_increment
-
+        return
