@@ -1,8 +1,9 @@
 
-from frame.three_dimensional.canvas import Canvas
+from CTkToast import CTkToast
 from Navigation import Navigation
 from customtkinter import CTk
 
+from frame.three_dimensional.canvas import Canvas
 from custom_types import *
 from constants import *
 
@@ -24,15 +25,17 @@ class App(CTk):
         self.title("3D Shape Drawer by: Sam Adrian P. Sabalo")
         self.iconbitmap(ICON_PATH)
 
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=0, uniform="nav_col")
-        self.grid_columnconfigure(1, weight=1, uniform="nav_col")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=0, uniform="nav_col")
+        self.grid_rowconfigure(1, weight=1, uniform="nav_col")
+        self.configure(fg_color='black')
 
         navigation: Navigation = Navigation(parent=self)
-        navigation.grid(row=0, column=0, padx=DEFAULT_PADDING, pady=DEFAULT_PADDING, sticky="nsew")
+        navigation.grid(row=0, column=0, sticky="nsew")
 
         self.canvas: Canvas = Canvas(self)
-        self.canvas.grid(row=0, column=1, padx=BOTTOM_PADDING_ONLY, pady=DEFAULT_PADDING, sticky="nsew")
+        self.canvas.grid(row=1, column=0, sticky="nsew")
+        CTkToast(master=self)
 
         self.bind("<KeyRelease>", lambda event: self.canvas.key_released(event))
         self.bind("<Key>", lambda event: self.canvas.key_pressed(event))
