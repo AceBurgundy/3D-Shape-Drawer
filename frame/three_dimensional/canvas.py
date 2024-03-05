@@ -49,9 +49,6 @@ class Canvas(pyopengltk.OpenGLFrame):
             **kwargs: Additional keyword arguments to pass to the parent class initializer.
         """
         super().__init__(parent, *args, **kwargs)
-        self.update_idletasks()
-        Canvas.width = self.winfo_width()
-        Canvas.height = self.winfo_height()
 
         self.bind("<Motion>", lambda event: on_mouse_move(self, event))
         self.bind("<Button>", lambda event: on_mouse_clicked(self, event))
@@ -102,6 +99,42 @@ class Canvas(pyopengltk.OpenGLFrame):
         """
         handle_key_released(self, event)
 
+    def init_offscreen_buffer(self) -> None:
+        """
+        Initializes the offscreen framebuffer and texture
+        """
+        # Generate framebuffer and texture IDs
+        self.offscreen_framebuffer_id = glGenFramebuffers(1)
+        self.offscreen_texture_id = glGenTextures(1)
+
+        glBindFramebuffer(GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
+        glBindTexture(GL_TEXTURE_2D, self.offscreen_texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Canvas.width, Canvas.height, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.offscreen_texture_id, 0)
+
+        if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
+            print("Error: Offscreen framebuffer is incomplete")
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+
+    def initgl(self) -> None:
+        """
+        Initializes the canvas and OpenGL context
+        """
+        self.update_idletasks()
+        Canvas.width = self.winfo_width()
+        Canvas.height = self.winfo_height()
+
+        glClearColor(0.17, 0.17, 0.17, 1.0)
+
+        self.viewMatrix = glGetFloatv(GL_MODELVIEW_MATRIX)
+        self.init_offscreen_buffer()
+        glEnable(GL_DEPTH_TEST)
+
     def __draw_grid(self, distance: int = 100) -> None:
         """
         Draw grid lines
@@ -121,50 +154,20 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         glEnd()
 
-    def initgl(self) -> None:
-        """
-        Initializes the canvas and OpenGL context
-        """
-        glClearColor(0.17, 0.17, 0.17, 1.0)
-        gluPerspective(45, (self.width / self.height), 0.1, 150.0)
-
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
-        self.viewMatrix = glGetFloatv(GL_MODELVIEW_MATRIX)
-        # self.init_offscreen_buffer()
-        glEnable(GL_DEPTH_TEST)
-
-    def init_offscreen_buffer(self) -> None:
-        """
-        Initializes the offscreen framebuffer and texture
-        """
-        # Generate framebuffer and texture IDs
-        self.offscreen_framebuffer_id = glGenFramebuffers(1)
-        self.offscreen_texture_id = glGenTextures(1)
-
-        glBindFramebuffer(GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
-        glBindTexture(GL_TEXTURE_2D, self.offscreen_texture_id)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.offscreen_texture_id, 0)
-
-        if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
-            print("Error: Offscreen framebuffer is incomplete")
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
-
-    def draw_offscreen(self) -> None:
+    def __draw_offscreen(self) -> None:
         """
         Performs offscreen drawing operations for color picking purposes
         """
         # Bind the offscreen framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glViewport(0, 0, Canvas.width, Canvas.height)
+
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
+
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
 
         glRotatef(self.mouse_y * Canvas.camera_sensitivity, 1, 0, 0)
         glRotatef(self.mouse_x * Canvas.camera_sensitivity, 0, 0, 1)
@@ -172,16 +175,14 @@ class Canvas(pyopengltk.OpenGLFrame):
         # camera movement
         glTranslatef(*self.camera_translation)
 
-        if len(Canvas.shapes) <= 0:
-            return
-
-        for shape in Canvas.shapes:
-            shape.draw_to_canvas(True)
+        if len(Canvas.shapes) > 0:
+            for shape in Canvas.shapes:
+                shape.draw_to_canvas(True)
 
         # Unbind the offscreen framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
-    def redraw(self) -> None:
+    def __draw_onscreen(self) -> None:
         """
         Sets canvas properties, clears the buffers, and calls a shape draw method if not None
         """
@@ -189,7 +190,7 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(45, (self.width / self.height), 1, 150)
+        gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
@@ -200,15 +201,12 @@ class Canvas(pyopengltk.OpenGLFrame):
         # camera movement
         glTranslatef(*self.camera_translation)
 
-        # Draw the grid
         self.__draw_grid()
 
-        # self.draw_offscreen()
+        if len(Canvas.shapes) > 0:
+            for shape in Canvas.shapes:
+                shape.draw_to_canvas()
 
-        if len(Canvas.shapes) <= 0:
-            return
-
-        for shape in Canvas.shapes:
-            shape.draw_to_canvas()
-
-
+    def redraw(self) -> None:
+        self.__draw_offscreen()
+        self.__draw_onscreen()
