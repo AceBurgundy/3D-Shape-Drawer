@@ -68,11 +68,12 @@ class Sphere(Shape):
         # Requires rotation as dots on vertices dont match grid vertex
         GL.glRotatef(-3.5, 0, 0, 1)
         GL.glColor3f(*self.grid_color)
-        GLU.gluQuadricDrawStyle( GLU.gluNewQuadric(), GLU.GLU_LINE)
-        GLU.gluSphere( GLU.gluNewQuadric(), self.radius, self.slices, self.stacks)
+        quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_LINE)
+        GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)
         GL.glPopMatrix()
 
-        # Used for mapping out all dots in the grid
+        # used for mapping out all dots in the grid
         for stack in range(self.stacks + 1):
             phi: NUMBER = pi * stack / self.stacks
             for slice_ in range(self.slices + 1):
