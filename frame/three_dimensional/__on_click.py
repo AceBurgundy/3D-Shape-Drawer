@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
+
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
-from OpenGL.GL import glBindFramebuffer, glBindFramebuffer, glPixelStorei, glReadPixels, glReadBuffer, GL_COLOR_ATTACHMENT0, GL_PACK_ALIGNMENT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_RGB, GL_FRAMEBUFFER
 from geometry.shapes import Shape
-from custom_types import RGB
 from tkinter import Event
+from numpy import float32
 from typing import List
+
+import OpenGL.GL as GL
 
 def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
     """
@@ -23,34 +25,32 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
     """
     click_types: List[str] = ["Left", "Scroll", "Right"]
 
-    if event.num > 1:
+    if event.num >= 1:
         canvas_instance.mouse_pressed = click_types[event.num - 1]
 
     if canvas_instance.mouse_pressed == 'Left':
 
-        mouse_x = event.x
-        mouse_y = canvas_instance.height - event.y  # Invert y-coordinate to match OpenGL
+        if len(canvas_instance.shapes) <= 0:
+            return
+
+        mouse_y: int = canvas_instance.height - event.y  # Invert y-coordinate to match OpenGL
 
         # Read color of the pixel at the mouse coordinates from the offscreen framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, canvas_instance.offscreen_framebuffer_id)
-        glReadBuffer(GL_COLOR_ATTACHMENT0)
-        glPixelStorei(GL_PACK_ALIGNMENT, 1)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, canvas_instance.offscreen_framebuffer_id)
+        GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
+        GL.glPixelStorei(GL.GL_PACK_ALIGNMENT, 1)
 
-        pixel_data = glReadPixels(mouse_x, mouse_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
-        clicked_rgb = [pixel_data[0][0]]
+        long_float_colors: List[float32] = GL.glReadPixels(event.x, mouse_y, 1, 1, GL.GL_RGB, GL.GL_FLOAT)[0][0]
+        picked_rgb: Tuple[int, int, int] = tuple(round(float(color), 2) for color in long_float_colors)
 
         # Unbind the offscreen framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        selected_shape_id: int|None = None
 
-        selected_shape: str|None = None
-
-        for shape_name, shape_rgb in Shape.buffer_colors.items():
-            if set(clicked_rgb).intersection(shape_rgb):
-                selected_shape = shape_name
+        for shape_id, shape_rgb in Shape.buffer_colors.items():
+            if picked_rgb == shape_rgb:
+                selected_shape_id = shape_id
                 break
 
-        print(f"Clicked {selected_shape}" if selected_shape else f"Color in this coordinate is {clicked_rgb}")
-
-        """
-        If shape is selected, and r is being held, set the shapes self.rotate_shape to true, and false when released
-        """
+        for shape in canvas_instance.shapes:
+            shape.selected = shape.id == selected_shape_id
