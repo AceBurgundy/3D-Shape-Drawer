@@ -8,9 +8,9 @@ if TYPE_CHECKING:
     from geometry.shapes import Shape
     from Program import App
 
-from OpenGL.GL import glCheckFramebufferStatus, glFramebufferTexture2D, glGenFramebuffers, glBindFramebuffer, glTexParameteri, glLoadIdentity, glGetDoublev, glTranslatef, glGenTextures, glBindTexture, glClearColor, glTexImage2D, glMatrixMode, glGetFloatv, glVertex3f, glViewport, glColor3f, glRotatef, glBegin, glClear, glEnd, glDisable, glEnable
-from OpenGL.GL import GL_FRAMEBUFFER_COMPLETE, GL_COLOR_BUFFER_BIT, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER, GL_COLOR_ATTACHMENT0, GL_MODELVIEW_MATRIX, GL_DEPTH_BUFFER_BIT, GL_UNSIGNED_BYTE, GL_FRAMEBUFFER, GL_TEXTURE_2D, GL_PROJECTION, GL_MODELVIEW, GL_NEAREST, GL_LINES, GL_RGB, GL_BLEND, GL_DEPTH_TEST
-from OpenGL.GLU import gluPerspective
+import OpenGL.GLU as GLU
+import OpenGL.GL as GL
+
 from tkinter import Event
 from typing import List
 from math import *
@@ -39,6 +39,7 @@ class Canvas(pyopengltk.OpenGLFrame):
     offscreen_framebuffer_id: int = -1
     offscreen_texture_id: int = -1
     pressed_key: str = ''
+    clip: bool = False
 
     def __init__(self, parent: App, *args, **kwargs) -> None:
         """
@@ -59,11 +60,16 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         self.mouse_x: int = 0
         self.mouse_y: int = 0
+        self.camera_x: int = 0
+        self.camera_y: int = 0
 
         self.dragging = False
-        self.prev_mouse_x: int = 0
-        self.prev_mouse_y: int = 0
         self.mouse_pressed: str = ''
+
+        self.previous_mouse_x: int = 0
+        self.previous_mouse_y: int = 0
+        self.previous_camera_x: int = 0
+        self.previous_camera_y: int = 0
 
         self.camera_y_translate: float = 0.0
         self.camera_x_translate: float = 0.0
@@ -80,9 +86,11 @@ class Canvas(pyopengltk.OpenGLFrame):
         """
         Move the camera in the specified direction relative to its orientation.
         """
-        rotation_matrix = glGetDoublev(GL_MODELVIEW_MATRIX)
-        transformed_direction = dot(rotation_matrix[:3, :3], direction_vector)
+        rotation_matrix = GL.glGetDoublev(GL.GL_MODELVIEW_MATRIX)
+        rotation_matrix = rotation_matrix[:3, :3]
+        transformed_direction = dot(rotation_matrix, direction_vector)
 
+        # Update the camera translation based on the transformed direction
         self.camera_x_translate += transformed_direction[0]
         self.camera_y_translate += transformed_direction[1]
         self.camera_zoom_translate += transformed_direction[2]
@@ -104,102 +112,113 @@ class Canvas(pyopengltk.OpenGLFrame):
         Initializes the offscreen framebuffer and texture
         """
         # Generate framebuffer and texture IDs
-        self.offscreen_framebuffer_id = glGenFramebuffers(1)
-        self.offscreen_texture_id = glGenTextures(1)
+        self.offscreen_framebuffer_id = GL.glGenFramebuffers(1)
+        self.offscreen_texture_id = GL.glGenTextures(1)
 
-        glBindFramebuffer(GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
-        glBindTexture(GL_TEXTURE_2D, self.offscreen_texture_id)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Canvas.width, Canvas.height, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.offscreen_texture_id)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, Canvas.width, Canvas.height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, None)
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.offscreen_texture_id, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.offscreen_texture_id, 0)
 
-        if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
+        if GL.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER) != GL.GL_FRAMEBUFFER_COMPLETE:
             print("Error: Offscreen framebuffer is incomplete")
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
     def initgl(self) -> None:
         """
-        Initializes the canvas and OpenGL context
+        Initializes the canvas and OpenGL.GL context
         """
         self.update_idletasks()
         Canvas.width = self.winfo_width()
         Canvas.height = self.winfo_height()
 
-        glClearColor(0.17, 0.17, 0.17, 1.0)
+        GL.glClearColor(0.17, 0.17, 0.17, 1.0)
 
-        self.viewMatrix = glGetFloatv(GL_MODELVIEW_MATRIX)
+        self.viewMatrix = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX)
         self.init_offscreen_buffer()
-        glEnable(GL_DEPTH_TEST)
+        GL.glEnable(GL.GL_DEPTH_TEST)
 
-    def __draw_grid(self, distance: int = 100) -> None:
+        # Enable blending for transparency
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+
+    def __draw_grid(self, distance: int = 100, opacity: float = 0.2) -> None:
         """
         Draw grid lines
         """
-        glColor3f(0.5, 0.5, 0.5)
-        glBegin(GL_LINES)
+        green: RGBA = (0.0, 1.0, 0.0, 0.4)
+        red: RGBA = (1.0, 0.0, 0.0, 0.4)
+        default_color: RGBA = (0.7, 0.7, 0.7, opacity)
+
+        GL.glLineWidth(0.5)
+        GL.glBegin(GL.GL_LINES)
 
         # Draw lines along the X-axis
         for index in range(-distance, distance + 1):
-            glVertex3f(index, -distance, 0)
-            glVertex3f(index, distance, 0)
+            GL.glColor4f(*green if index == 0 else default_color)
+            GL.glVertex3f(index, -distance, 0)
+            GL.glVertex3f(index, distance, 0)
 
         # Draw lines along the Y-axis
         for index in range(-distance, distance + 1):
-            glVertex3f(-distance, index, 0)
-            glVertex3f(distance, index, 0)
+            GL.glColor4f(*red if index == 0 else default_color)
+            GL.glVertex3f(-distance, index, 0)
+            GL.glVertex3f(distance, index, 0)
 
-        glEnd()
+        GL.glEnd()
+        GL.glLineWidth(1.0)
 
     def __draw_offscreen(self) -> None:
         """
         Performs offscreen drawing operations for color picking purposes
         """
         # Bind the offscreen framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.offscreen_framebuffer_id)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
+        GL.glMatrixMode(GL.GL_PROJECTION)
+        GL.glLoadIdentity()
+        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        GL.glMatrixMode(GL.GL_MODELVIEW)
+        GL.glLoadIdentity()
 
-        glRotatef(self.mouse_y * Canvas.camera_sensitivity, 1, 0, 0)
-        glRotatef(self.mouse_x * Canvas.camera_sensitivity, 0, 0, 1)
+        GL.glRotatef(self.camera_y * Canvas.camera_sensitivity, 1, 0, 0)
+        GL.glRotatef(self.camera_x * Canvas.camera_sensitivity, 0, 0, 1)
 
         # camera movement
-        glTranslatef(*self.camera_translation)
+        GL.glTranslatef(*self.camera_translation)
 
         if len(Canvas.shapes) > 0:
             for shape in Canvas.shapes:
                 shape.draw_to_canvas(True)
 
         # Unbind the offscreen framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
     def __draw_onscreen(self) -> None:
         """
         Sets canvas properties, clears the buffers, and calls a shape draw method if not None
         """
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
+        GL.glMatrixMode(GL.GL_PROJECTION)
+        GL.glLoadIdentity()
+        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        GL.glMatrixMode(GL.GL_MODELVIEW)
+        GL.glLoadIdentity()
 
-        glRotatef(self.mouse_y * Canvas.camera_sensitivity, 1, 0, 0)
-        glRotatef(self.mouse_x * Canvas.camera_sensitivity, 0, 0, 1)
+        GL.glRotatef(self.camera_y * Canvas.camera_sensitivity, 1, 0, 0)
+        GL.glRotatef(self.camera_x * Canvas.camera_sensitivity, 0, 0, 1)
 
         # camera movement
-        glTranslatef(*self.camera_translation)
+        GL.glTranslatef(*self.camera_translation)
 
         self.__draw_grid()
 
