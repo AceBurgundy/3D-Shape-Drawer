@@ -1,9 +1,10 @@
-from OpenGL.GL import glDisable, glPopMatrix, glFlush, glVertex3f, glPushMatrix, glTranslatef, glRotatef, glRotatef, glTranslatef, GL_BLEND
-from OpenGL.GLU import gluNewQuadric, gluQuadricDrawStyle, GLU_FILL, gluSphere
 from abc import ABC, abstractmethod
-from random import random
 from typing import Callable, Dict
+from random import random
 from math import *
+
+import OpenGL.GLU as GLU
+import OpenGL.GL as GL
 
 from custom_types import *
 from constants import *
@@ -51,7 +52,7 @@ class Shape(ABC):
     @staticmethod
     def new_rgb() -> RGB:
         """
-        Generates random RGB float values between 0.0 and 1.0 for OpenGL.
+        Generates random RGB float values between 0.0 and 1.0 for OpenGL.GL.
         Ensures the generated RGB tuple is unique in the buffer_colors.
 
         Returns:
@@ -88,30 +89,30 @@ class Shape(ABC):
                 Shape.previous_mouse_x = Shape.mouse_x
                 Shape.previous_mouse_y = Shape.mouse_y
 
-                glPushMatrix()
-                glTranslatef(self.x, self.y, self.z)
-                glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-                glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
-                glTranslatef(-self.x, -self.y, -self.z)
+                GL.glPushMatrix()
+                GL.glTranslatef(self.x, self.y, self.z)
+                GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+                GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+                GL.glTranslatef(-self.x, -self.y, -self.z)
 
                 self.draw(offscreen)
 
-                glPopMatrix()
-                glFlush()
+                GL.glPopMatrix()
+                GL.glFlush()
                 return
 
-        glPushMatrix()
+        GL.glPushMatrix()
 
         # Apply rotation from key press movements
-        glTranslatef(self.x, self.y, self.z)
+        GL.glTranslatef(self.x, self.y, self.z)
 
         # Rotate to the updated angle after rotation or it will snap back to 0,0
-        glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-        glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+        GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+        GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
         self.draw(offscreen)
 
-        glPopMatrix()
-        glFlush()
+        GL.glPopMatrix()
+        GL.glFlush()
 
     @abstractmethod
     def draw(self, offscreen: bool = False) -> None:
@@ -142,12 +143,12 @@ class Shape(ABC):
         """
         radius: float = 0.02
 
-        glPushMatrix()
-        glTranslatef(x, y, z)
-        quadric = gluNewQuadric()
-        gluQuadricDrawStyle(quadric, GLU_FILL)
-        gluSphere(quadric, radius, 10, 10)
-        glPopMatrix()
+        GL.glPushMatrix()
+        GL.glTranslatef(x, y, z)
+        quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+        GLU.gluSphere(quadric, radius, 10, 10)
+        GL.glPopMatrix()
 
     @abstractmethod
     def resize(self, increment: bool=True) -> None:
