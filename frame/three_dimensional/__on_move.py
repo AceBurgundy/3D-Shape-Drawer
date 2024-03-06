@@ -18,9 +18,6 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
         canvas_instance (Canvas): The current instance of the canvas
         event (Event): A Tkinter event object representing the key press event.
     """
-    Shape.mouse_x = event.x
-    Shape.mouse_y = event.y
-
     if canvas_instance.pressed_key == 'r':
         for shape in canvas_instance.shapes:
             if shape.selected:

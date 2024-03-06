@@ -33,11 +33,6 @@ class Shape(ABC):
     default_increment: int = 1
     grid_color: RGB = BLACK
 
-    previous_mouse_x: int = -1
-    previous_mouse_y: int = -1
-    mouse_x: int = -1
-    mouse_y: int = -1
-
     shape_ids: List[int] = buffer_colors.keys()
     current_buffer_colors: RGBS = buffer_colors.values()
 
@@ -313,19 +308,6 @@ class Shape(ABC):
         Increases or decreases the size of the shape by several pixels.
         """
         raise NotImplementedError()
-
-    def rotate(self) -> None:
-        """
-        Rotates the shape base on the current coordinates of the mouse
-        """
-        distance_x: int = Shape.mouse_x - self.x
-        distance_y: int = Shape.mouse_y - self.y
-
-        # Use atan2 to find the angle (in radians)
-        angle_radians: NUMBER = atan2(distance_y, distance_x)
-
-        # set the angle as the radians as degrees
-        self.angle = degrees(angle_radians)
 
     def move_up(self) -> None:
         """
