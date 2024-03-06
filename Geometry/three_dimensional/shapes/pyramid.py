@@ -1,5 +1,5 @@
 from typing import Optional, override
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from custom_types import *
 from constants import *
 
@@ -78,7 +78,7 @@ class Pyramid(Shape):
         """
         super().draw_grid()
 
-        GL.glColor3f(*self.grid_color)
+        GL.glColor3f(*Shape.grid_color)
 
         GL.glBegin(GL.GL_LINE_LOOP)
         for corner in self.corners:

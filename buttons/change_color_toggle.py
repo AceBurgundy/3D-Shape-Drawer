@@ -42,5 +42,5 @@ class ColorPickerToggle(CTkButton):
 
         for shape in Canvas.shapes:
             if shape.selected:
-                shape.set_new_color_from_hex(chosen_color)
+                shape.background_color = chosen_color
                 break

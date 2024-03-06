@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Type, List
-from CTkToast import CTkToast
 
 from save import export_to_file, import_from_file
 
 if TYPE_CHECKING:
     from Program import App
 
-from geometry.shape_list import shape_class_references, shape_names
+from geometry.three_dimensional.shape_list import shape_class_references, shape_names
 from buttons.change_color_toggle import ColorPickerToggle
+from geometry.three_dimensional.shapes import Shape
 from frame.three_dimensional.canvas import Canvas
-from geometry.shapes import Shape
 
 from customtkinter import *
 from constants import *

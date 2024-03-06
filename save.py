@@ -1,5 +1,5 @@
 from frame.three_dimensional.canvas import Canvas
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from CTkToast import CTkToast
 
 from tkinter import filedialog, Tk
@@ -26,7 +26,7 @@ def export_to_file() -> bool:
 
     return True
 
-def __open_file_dialog() -> str | None:
+def open_file_dialog() -> str | None:
     """
     Prompts the user where to pick the file
     """
@@ -63,7 +63,7 @@ def import_from_file():
     Returns:
     list: The imported list of class instances.
     """
-    file_path: str = __open_file_dialog()
+    file_path: str = open_file_dialog()
 
     if not file_path:
         CTkToast.toast('Cancelled selection')

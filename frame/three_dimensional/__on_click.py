@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Tuple
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from tkinter import Event
 from numpy import float32
 from typing import List

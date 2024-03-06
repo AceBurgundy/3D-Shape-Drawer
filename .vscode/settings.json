@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        "requirements.txt": true,
+        "mypy.ini": true,
+        ".mypy_cache": true,
+        "__pycache__": true,
+        ".vscode": true,
+        ".gitignore": true,
+        "__init__.py": true,
+        "env": true
+    }
+}

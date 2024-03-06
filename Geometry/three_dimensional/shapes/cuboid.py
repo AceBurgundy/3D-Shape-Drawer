@@ -1,21 +1,21 @@
-from OpenGL.GL import GL_QUADS, GL_LINES, glVertex3fv, glBegin, glEnd, glColor3f
-from geometry.shapes import Shape
+from OpenGL.GL import GL_QUADS, GL_LINES, glVertex3fv, glBegin, glColor3f, glEnd
+from geometry.three_dimensional.shapes import Shape
 from typing import override
 from math import *
 
 from custom_types import *
 from constants import *
 
-class Cube(Shape):
+class Cuboid(Shape):
 
-    def __init__(self, width: NUMBER = 2, height: NUMBER = 2, depth: NUMBER = 3) -> None:
+    def __init__(self, width: NUMBER = 1.5, height: NUMBER = 1.0, depth: NUMBER = 3) -> None:
         """
-        Initializes the cube
+        Initializes the cuboid
 
         Args:
-            width (NUMBER): the width of the cube. Defaults to 2
-            height (NUMBER): the height of the cube. Defaults to 2
-            depth (NUMBER): the depth of the cube. Defaults to 3
+            width (NUMBER): the width of the cuboid. Defaults to 1.5
+            height (NUMBER): the height of the cuboid. Defaults to 35
+            depth (NUMBER): the depth of the cuboid. Defaults to 35
         """
         super().__init__()
         self.width: NUMBER = width
@@ -55,7 +55,7 @@ class Cube(Shape):
     @override
     def draw(self, offscreen: bool = False) -> None:
         """
-        Draws a cube
+        Draws a cuboid
 
         Args:
             offscreen (bool): If the shape will be rendered off screen
@@ -94,11 +94,11 @@ class Cube(Shape):
     @override
     def draw_grid(self) -> None:
         """
-        Draws a grid that is wrapping up the cube
+        Draws a grid that is wrapping up the cuboid
         """
         super().draw_grid()
 
-        glColor3f(*self.grid_color)
+        glColor3f(*Shape.grid_color)
         glBegin(GL_LINES)
 
         for edge in (

@@ -1,4 +1,4 @@
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from typing import override
 from math import *
 
@@ -67,7 +67,7 @@ class Sphere(Shape):
 
         # Requires rotation as dots on vertices dont match grid vertex
         GL.glRotatef(-3.5, 0, 0, 1)
-        GL.glColor3f(*self.grid_color)
+        GL.glColor3f(*Shape.grid_color)
         quadric = GLU.gluNewQuadric()
         GLU.gluQuadricDrawStyle(quadric, GLU.GLU_LINE)
         GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)

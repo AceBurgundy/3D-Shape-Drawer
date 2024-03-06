@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
-    from geometry.shapes import Shape
+    from geometry.three_dimensional.shapes import Shape
 
 from .__key_status import __get_key_status
 from typing import Dict, List

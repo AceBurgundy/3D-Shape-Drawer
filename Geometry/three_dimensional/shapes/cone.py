@@ -1,6 +1,6 @@
 from OpenGL.GLU import GLU_FILL, gluQuadricDrawStyle, gluNewQuadric, gluCylinder
 from OpenGL.GL import GL_LINES, glColor3f, glBegin, glEnd, glVertex3f
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from typing import Any, override
 from math import *
 
@@ -71,7 +71,7 @@ class Cone(Shape):
         if len(self.vertices) < 0:
             return
 
-        glColor3f(*self.grid_color)
+        glColor3f(*Shape.grid_color)
 
         # Calculate the angle between each vertex along the circumference
         angle_increment: float = 2 * pi / self.slices

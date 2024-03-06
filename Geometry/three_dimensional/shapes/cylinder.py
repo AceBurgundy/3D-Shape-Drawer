@@ -1,6 +1,6 @@
 from OpenGL.GL import GL_LINES, GL_BLEND, glBegin, glEnd, glVertex3f, glColor3f, glDisable
 from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluCylinder, gluQuadricDrawStyle
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
 from typing import Any, override
 from math import *
 
@@ -74,7 +74,7 @@ class Cylinder(Shape):
         super().draw_grid()
 
         angle_increment: float = 2 * pi / self.slices
-        glColor3f(*self.grid_color)
+        glColor3f(*Shape.grid_color)
 
         glBegin(GL_LINES)
 

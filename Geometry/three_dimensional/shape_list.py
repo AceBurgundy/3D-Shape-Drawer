@@ -1,11 +1,12 @@
-from geometry.cylinder import Cylinder
-from geometry.pyramid import Pyramid
-from geometry.cuboid import Cuboid
-from geometry.sphere import Sphere
-from geometry.cone import Cone
-from geometry.cube import Cube
+from geometry.three_dimensional.shapes.cylinder import Cylinder
+from geometry.three_dimensional.shapes.pyramid import Pyramid
+from geometry.three_dimensional.shapes.cuboid import Cuboid
+from geometry.three_dimensional.shapes.sphere import Sphere
+from geometry.three_dimensional.shapes.cone import Cone
+from geometry.three_dimensional.shapes.cube import Cube
 
-from geometry.shapes import Shape
+from geometry.three_dimensional.shapes import Shape
+
 from typing import Dict, Callable, List
 
 def shape_class_references() -> Dict[str, Callable]:
@@ -19,3 +20,4 @@ def shape_names() -> List[str]:
     Returns a dictionary with shape names and their class instance
     """
     return list(shape_class_references().keys())
+
