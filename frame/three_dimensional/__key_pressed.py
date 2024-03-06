@@ -41,7 +41,7 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
             __handle_shift(canvas_instance, key)
             return
 
-    if key and type(key) == 'str':
+    if key:
         __handle_key(canvas_instance, key)
 
 def __handle_shift(canvas_instance: Canvas, key: str) -> None:
@@ -55,12 +55,12 @@ def __handle_shift(canvas_instance: Canvas, key: str) -> None:
     if key == 'Up' and Shape.selected_shape:
         Shape.selected_shape.move_up()
     else:
-        CTkToast.message("To move up select a shape first")
+        CTkToast.toast("To move up select a shape first")
 
     if key == 'Down' and Shape.selected_shape:
         Shape.selected_shape.move_down()
     else:
-        CTkToast.message("To move down select a shape first")
+        CTkToast.toast("To move down select a shape first")
 
 def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
     """
@@ -111,6 +111,17 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
             CTkToast.toast("To move right select a shape first")
         else:
             Shape.selected_shape.move_right()
+
+    elif key == 'Delete':
+        if not Shape.selected_shape:
+            CTkToast.toast("To delete, select a shape first")
+        else:
+            for shape in canvas_instance.shapes:
+                if shape.id == Shape.selected_shape.id:
+                    del Shape.buffer_colors[Shape.selected_shape.id]
+                    canvas_instance.shapes.remove(shape)
+                    Shape.selected_shape = None
+                    return
 
     elif key == 'r':
         canvas_instance.pressed_key = key
