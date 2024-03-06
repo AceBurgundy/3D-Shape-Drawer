@@ -26,8 +26,8 @@ class ColorPickerToggle(CTkButton):
         The click event for the button
         """
         if not Shape.selected:
-             CTkToast.toast("To change color, select a shape first")
-             return
+            CTkToast.toast("To change color, select a shape first")
+            return
 
         super()._clicked(event)
         pick_color: AskColor = AskColor()
