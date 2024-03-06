@@ -33,7 +33,7 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
     if key == 'r':
         canvas_instance.pressed_key = ''
 
-        if not Shape.selected_shape:
+        if Shape.selected_shape is None:
             return
 
         Shape.selected_shape.rotate_shape = False

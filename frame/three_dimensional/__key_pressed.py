@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
@@ -88,35 +88,30 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
+    toast: Callable = lambda command_name: CTkToast.toast(f"To {command_name.replace('_', ' ')}, select a shape first")
+    run: Callable = lambda command: getattr(Shape.selected_shape, command.__name__)()
+
+    command_or_toast: Callable = lambda command: run(command) if Shape.selected_shape is not None else toast(command.__name__)
+
     if key == 'Up':
-        if not Shape.selected_shape:
-            CTkToast.toast("To move up select a shape first")
-        else:
-            Shape.selected_shape.move_forward()
+        command_or_toast(Shape.move_forward)
+        return
 
     elif key == 'Down':
-        if not Shape.selected_shape:
-            CTkToast.toast("To move down select a shape first")
-        else:
-            Shape.selected_shape.move_backward()
+        command_or_toast(Shape.move_backward)
+        return
 
     elif key == 'Left':
-        if not Shape.selected_shape:
-            CTkToast.toast("To move left select a shape first")
-        else:
-            Shape.selected_shape.move_left()
+        command_or_toast(Shape.move_left)
+        return
 
     elif key == 'Right':
-        if not Shape.selected_shape:
-            CTkToast.toast("To move right select a shape first")
-        else:
-            Shape.selected_shape.move_right()
+        command_or_toast(Shape.move_right)
+        return
 
     elif key == 'Delete':
-        if not Shape.selected_shape:
-            CTkToast.toast("To delete, select a shape first")
-        else:
-            Shape.selected_shape.delete()
+        command_or_toast(Shape.selected_shap)
+        return
 
     elif key == 'r':
         canvas_instance.pressed_key = key
