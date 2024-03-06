@@ -125,7 +125,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.offscreen_texture_id, 0)
 
         if GL.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER) != GL.GL_FRAMEBUFFER_COMPLETE:
-            print("Error: Offscreen framebuffer is incomplete")
+            raise Exception("Error: Offscreen framebuffer is incomplete")
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 

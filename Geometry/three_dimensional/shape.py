@@ -4,7 +4,7 @@ from custom_types import *
 from constants import *
 
 from abc import ABC, abstractmethod
-from typing import Dict, Type
+from typing import Dict
 from math import *
 
 import OpenGL.GLU as GLU
@@ -27,7 +27,7 @@ class Shape(ABC):
         current_buffer_colors (RGBS): The current buffer colors.
     """
 
-    selected_shape: 'Shape'|None = None
+    selected_shape: Optional['Shape'] = None
     buffer_colors: Dict[int, RGB] = {}
 
     default_increment: int = 1
@@ -35,6 +35,9 @@ class Shape(ABC):
 
     shape_ids: List[int] = buffer_colors.keys()
     current_buffer_colors: RGBS = buffer_colors.values()
+
+    mouse_x: int = 0
+    mouse_y: int = 0
 
     def __init__(self) -> None:
         """
