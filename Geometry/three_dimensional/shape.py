@@ -52,13 +52,13 @@ class Shape(ABC):
             show_grid (bool): Flag indicating whether the grid should be displayed.
             selected (bool): Flag indicating whether the shape is selected.
             vertices (VERTICES): List of vertices for creating dots.
-            _id (int): The unique identifier of the shape.
-            _background_color (RGB): The background color of the shape.
-            _texture_path (str): The path to the texture.
-            _angle (NUMBER): The angle of rotation.
-            _x (int): The X-coordinate.
-            _y (int): The Y-coordinate.
-            _z (int): The Z-coordinate.
+            __id (int): The unique identifier of the shape.
+            __background_color (RGB): The background color of the shape.
+            __texture_path (str): The path to the texture.
+            __angle (NUMBER): The angle of rotation.
+            __x (int): The X-coordinate.
+            __y (int): The Y-coordinate.
+            __z (int): The Z-coordinate.
         """
         self.__id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
         Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
@@ -69,6 +69,9 @@ class Shape(ABC):
         self.rotate_shape: bool = False
         self.show_grid: bool = False
         self.selected: bool = False
+
+        self.__rotation_x: int = 0.0
+        self.__rotation_y: int = 0.0
 
         # list of vertex (for creating dots)
         self.vertices: VERTICES = []
@@ -84,6 +87,20 @@ class Shape(ABC):
         RGB: The background color of the shape.
         """
         return self.__background_color
+
+    @property
+    def rotation_x(self):
+        """
+        INT: the x rotation of the shape.
+        """
+        return self.__rotation_x
+
+    @property
+    def rotation_y(self):
+        """
+        INT: the y rotation of the shape.
+        """
+        return self.__rotation_y
 
     @property
     def texture_path(self):
@@ -142,6 +159,26 @@ class Shape(ABC):
             TypeError: If one of the elements is a float not within 0-1.0.
         """
         self.__background_color = process_rgb(rgb_argument)
+
+    @rotation_x.setter
+    def rotation_x(self, rotation: int) -> None:
+        """
+        Sets the x rotation of the shape.
+
+        Args:
+            rotation (int): The rotation value.
+        """
+        self.__rotation_x = rotation
+
+    @rotation_y.setter
+    def rotation_y(self, rotation: int) -> None:
+        """
+        Sets the y rotation of the shape.
+
+        Args:
+            rotation (int): The rotation value.
+        """
+        self.__rotation_y = rotation
 
     @texture_path.setter
     def texture_path(self):
@@ -207,25 +244,25 @@ class Shape(ABC):
                 """
                 Saves matrix, rotates shape, draws it and pops back the matrix.
                 """
-                Shape.previous_mouse_x = Shape.mouse_x
-                Shape.previous_mouse_y = Shape.mouse_y
+                self.rotation_x = Shape.mouse_x
+                self.rotation_y = Shape.mouse_y
 
                 GL.glPushMatrix()
                 GL.glTranslatef(self.x, self.y, self.z)
-                GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-                GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
-                GL.glTranslatef(-self.x, -self.y, -self.z)
+                GL.glRotatef(self.rotation_x, 0, 1, 0)
+                GL.glRotatef(-self.rotation_y, 1, 0, 0)
 
                 self.draw(offscreen)
 
                 GL.glPopMatrix()
                 GL.glFlush()
+                return
 
         GL.glPushMatrix()
         GL.glTranslatef(self.x, self.y, self.z)
 
-        GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-        GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+        GL.glRotatef(self.rotation_x, 0, 1, 0)
+        GL.glRotatef(-self.rotation_y, 1, 0, 0)
 
         GL.glLineWidth(1.2)
         self.draw(offscreen)
