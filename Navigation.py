@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 from geometry.three_dimensional.shape_list import shape_class_references, shape_names
 from buttons.change_color_toggle import ColorPickerToggle
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from frame.three_dimensional.canvas import Canvas
 
 from customtkinter import *

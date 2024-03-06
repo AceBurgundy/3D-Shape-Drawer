@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from tkinter import Event
 
 def on_mouse_move(canvas_instance: Canvas, event: Event):

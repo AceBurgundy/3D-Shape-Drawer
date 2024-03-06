@@ -1,4 +1,4 @@
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from typing import override
 from math import *
 

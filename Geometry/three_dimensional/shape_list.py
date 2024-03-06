@@ -1,11 +1,11 @@
+from geometry.three_dimensional.shapes.cube import Cube
 from geometry.three_dimensional.shapes.cylinder import Cylinder
 from geometry.three_dimensional.shapes.pyramid import Pyramid
 from geometry.three_dimensional.shapes.cuboid import Cuboid
 from geometry.three_dimensional.shapes.sphere import Sphere
 from geometry.three_dimensional.shapes.cone import Cone
-from geometry.three_dimensional.shapes.cube import Cube
 
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 
 from typing import Dict, Callable, List
 

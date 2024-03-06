@@ -1,5 +1,5 @@
 from typing import Optional, override
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from custom_types import *
 from constants import *
 

@@ -1,4 +1,4 @@
-from geometry.three_dimensional.rgb import process_rgb, random_rgb
+from geometry.rgb import process_rgb, random_rgb
 import save as save_functions
 from custom_types import *
 from constants import *
@@ -60,11 +60,11 @@ class Shape(ABC):
             _y (int): The Y-coordinate.
             _z (int): The Z-coordinate.
         """
-        self._id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
-        Shape.buffer_colors[self._id] = random_rgb(exemption_list=Shape.current_buffer_colors)
+        self.__id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
+        Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
 
-        self._background_color: RGB = GREY
-        self._texture_path: str = ''
+        self.__background_color: RGB = GREY
+        self.__texture_path: str = ''
 
         self.rotate_shape: bool = False
         self.show_grid: bool = False
@@ -73,59 +73,59 @@ class Shape(ABC):
         # list of vertex (for creating dots)
         self.vertices: VERTICES = []
 
-        self._angle: NUMBER = 0
-        self._x: int = 0
-        self._y: int = 0
-        self._z: int = 0
+        self.__angle: NUMBER = 0
+        self.__x: int = 0
+        self.__y: int = 0
+        self.__z: int = 0
 
     @property
     def background_color(self):
         """
         RGB: The background color of the shape.
         """
-        return self._background_color
+        return self.__background_color
 
     @property
     def texture_path(self):
         """
         str: The path to the texture.
         """
-        return self._texture_path
+        return self.__texture_path
 
     @property
     def angle(self) -> NUMBER:
         """
         NUMBER: The angle of rotation.
         """
-        return self._angle
+        return self.__angle
 
     @property
     def x(self) -> int:
         """
         int: The X-coordinate.
         """
-        return self._x
+        return self.__x
 
     @property
     def y(self) -> int:
         """
         int: The Y-coordinate.
         """
-        return self._y
+        return self.__y
 
     @property
     def z(self) -> int:
         """
         int: The Z-coordinate.
         """
-        return self._z
+        return self.__z
 
     @property
     def id(self):
         """
         int: The unique identifier of the shape.
         """
-        return self._id
+        return self.__id
 
     @background_color.setter
     def background_color(self, rgb_argument: RGB):
@@ -141,14 +141,14 @@ class Shape(ABC):
             TypeError: If one of the elements is an integer not within 0-255.
             TypeError: If one of the elements is a float not within 0-1.0.
         """
-        self._background_color = process_rgb(rgb_argument)
+        self.__background_color = process_rgb(rgb_argument)
 
     @texture_path.setter
     def texture_path(self):
         """
         Sets the path to the texture.
         """
-        self._texture_path: str = save_functions.open_file_dialog()
+        self.__texture_path: str = save_functions.open_file_dialog()
 
     @angle.setter
     def angle(self, angle: NUMBER) -> None:
@@ -158,7 +158,7 @@ class Shape(ABC):
         Args:
             angle (NUMBER): The angle value.
         """
-        self._angle = angle
+        self.__angle = angle
 
     @x.setter
     def x(self, x: int) -> None:
@@ -168,7 +168,7 @@ class Shape(ABC):
         Args:
             x (int): The X-coordinate value.
         """
-        self._x = x
+        self.__x = x
 
     @y.setter
     def y(self, y: int) -> None:
@@ -178,7 +178,7 @@ class Shape(ABC):
         Args:
             y (int): The Y-coordinate value.
         """
-        self._y = y
+        self.__y = y
 
     @z.setter
     def z(self, z: int) -> None:
@@ -188,7 +188,7 @@ class Shape(ABC):
         Args:
             z (int): The Z-coordinate value.
         """
-        self._z = z
+        self.__z = z
 
     def draw_to_canvas(self, offscreen: bool = False) -> None:
         """
@@ -201,37 +201,38 @@ class Shape(ABC):
         # Not doing so will cause the vertices size to increase slowing the app
         self.vertices = []
 
-        if not self.selected:
-            GL.glPushMatrix()
-            GL.glTranslatef(self.x, self.y, self.z)
+        if self.selected:
 
-            GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-            GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+            if self.rotate_shape:
+                """
+                Saves matrix, rotates shape, draws it and pops back the matrix.
+                """
+                Shape.previous_mouse_x = Shape.mouse_x
+                Shape.previous_mouse_y = Shape.mouse_y
 
-            GL.glLineWidth(1.2)
-            self.draw(offscreen)
-            GL.glLineWidth(1.0)
+                GL.glPushMatrix()
+                GL.glTranslatef(self.x, self.y, self.z)
+                GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+                GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
+                GL.glTranslatef(-self.x, -self.y, -self.z)
 
-            GL.glPopMatrix()
-            GL.glFlush()
+                self.draw(offscreen)
 
-        if self.rotate_shape:
-            """
-            Saves matrix, rotates shape, draws it and pops back the matrix.
-            """
-            Shape.previous_mouse_x = Shape.mouse_x
-            Shape.previous_mouse_y = Shape.mouse_y
+                GL.glPopMatrix()
+                GL.glFlush()
 
-            GL.glPushMatrix()
-            GL.glTranslatef(self.x, self.y, self.z)
-            GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
-            GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
-            GL.glTranslatef(-self.x, -self.y, -self.z)
+        GL.glPushMatrix()
+        GL.glTranslatef(self.x, self.y, self.z)
 
-            self.draw(offscreen)
+        GL.glRotatef(Shape.previous_mouse_x, 0, 1, 0)
+        GL.glRotatef(-Shape.previous_mouse_y, 1, 0, 0)
 
-            GL.glPopMatrix()
-            GL.glFlush()
+        GL.glLineWidth(1.2)
+        self.draw(offscreen)
+        GL.glLineWidth(1.0)
+
+        GL.glPopMatrix()
+        GL.glFlush()
 
     abstractmethod
     def draw(self, offscreen: bool = False) -> None:

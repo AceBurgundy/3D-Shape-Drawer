@@ -1,16 +1,7 @@
-# for type checking purposes.
-
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from Program import App
-
-# start of code
 from frame.three_dimensional.canvas import Canvas
 from customtkinter import CTkButton, CTkFrame
 from CTkColorPicker import AskColor
+from geometry.rgb import hex_to_rgb
 from typing import Type
 
 class ColorPickerToggle(CTkButton):
@@ -42,5 +33,5 @@ class ColorPickerToggle(CTkButton):
 
         for shape in Canvas.shapes:
             if shape.selected:
-                shape.background_color = chosen_color
+                shape.background_color = hex_to_rgb(chosen_color)
                 break

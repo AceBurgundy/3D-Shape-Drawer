@@ -1,5 +1,5 @@
 from frame.three_dimensional.canvas import Canvas
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from CTkToast import CTkToast
 
 from tkinter import filedialog, Tk

@@ -24,6 +24,35 @@ def random_rgb(exemption_list: RGBS|None = None) -> RGB:
 
     return new_color
 
+def hex_to_rgb(hex_color: str) -> RGB:
+    """
+    Converts hex into rgb where each element is a float 1.00
+
+    Args:
+        hex_color (str): The hex_color to be converted
+
+    Raises:
+        TypeError: If hex_color is not a string.
+        TypeError: If '#' not in string. Indicating its not a hex color
+
+    Returns:
+        A tuple of float rgbs
+    """
+    if not isinstance(hex_color, str):
+        raise TypeError()
+
+    if '#' not in hex_color:
+        raise TypeError()
+
+    hex_color = hex_color.lstrip('#')
+    convert_and_round: Callable = lambda color: round(int(color, 16) / 255.0, 2)
+
+    r: float = convert_and_round(hex_color[0:2])
+    g: float = convert_and_round(hex_color[2:4])
+    b: float = convert_and_round(hex_color[4:6])
+
+    return (r, g, b)
+
 def process_rgb(rgb_argument: Iterable[int|float]) -> RGB:
     """
     Processes the passed rgb argument.
@@ -40,6 +69,9 @@ def process_rgb(rgb_argument: Iterable[int|float]) -> RGB:
     Returns:
         The rgb_argument in tuple where each element is a float between 0-1.00
     """
+    if type(rgb_argument) == str:
+        raise TypeError("RGB argument can be an iterable but not string.")
+
     if not isinstance(rgb_argument, Iterable):
         raise TypeError("RGB argument must be an Iterable")
 

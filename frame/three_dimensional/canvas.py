@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from geometry.three_dimensional.shapes import Shape
+    from geometry.three_dimensional.shape import Shape
     from Program import App
 
 import OpenGL.GLU as GLU

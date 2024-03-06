@@ -1,6 +1,6 @@
 from OpenGL.GLU import GLU_FILL, gluQuadricDrawStyle, gluNewQuadric, gluCylinder
 from OpenGL.GL import GL_LINES, glColor3f, glBegin, glEnd, glVertex3f
-from geometry.three_dimensional.shapes import Shape
+from geometry.three_dimensional.shape import Shape
 from typing import Any, override
 from math import *
 
