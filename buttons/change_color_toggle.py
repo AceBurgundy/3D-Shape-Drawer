@@ -1,8 +1,11 @@
+from CTkToast import CTkToast
 from frame.three_dimensional.canvas import Canvas
 from customtkinter import CTkButton, CTkFrame
 from CTkColorPicker import AskColor
 from geometry.rgb import hex_to_rgb
 from typing import Type
+
+from geometry.three_dimensional.shape import Shape
 
 class ColorPickerToggle(CTkButton):
     def __init__(self, parent: Type[CTkFrame], *args, **kwargs):
@@ -22,16 +25,14 @@ class ColorPickerToggle(CTkButton):
         """
         The click event for the button
         """
+        if not Shape.selected:
+             CTkToast.toast("To change color, select a shape first")
+             return
+
         super()._clicked(event)
         pick_color: AskColor = AskColor()
 
         chosen_color = pick_color.get()
         self.configure(fg_color=chosen_color if chosen_color else "white")
 
-        if len(Canvas.shapes) < 0:
-            return
-
-        for shape in Canvas.shapes:
-            if shape.selected:
-                shape.background_color = hex_to_rgb(chosen_color)
-                break
+        Shape.selected_shape.background_color = hex_to_rgb(chosen_color)

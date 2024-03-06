@@ -52,5 +52,12 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
                 selected_shape_id = shape_id
                 break
 
+        if selected_shape_id is None:
+            Shape.selected_shape = None
+            return
+
         for shape in canvas_instance.shapes:
             shape.selected = shape.id == selected_shape_id
+
+            if shape.selected:
+                Shape.selected_shape = shape

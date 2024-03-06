@@ -27,7 +27,7 @@ class Shape(ABC):
         current_buffer_colors (RGBS): The current buffer colors.
     """
 
-    selected_shape: Type['Shape']|None = None
+    selected_shape: 'Shape'|None = None
     buffer_colors: Dict[int, RGB] = {}
 
     default_increment: int = 1

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
 from geometry.three_dimensional.shape import Shape
+from CTkToast import CTkToast
 from tkinter import Event
 
 def on_mouse_move(canvas_instance: Canvas, event: Event):
@@ -18,11 +19,11 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
         canvas_instance (Canvas): The current instance of the canvas
         event (Event): A Tkinter event object representing the key press event.
     """
-    if canvas_instance.pressed_key == 'r':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.rotate_shape = True
-                break
+    if canvas_instance.pressed_key == 'r' and Shape.selected_shape is None:
+        Shape.selected_shape.rotate_shape = True
+    else:
+        CTkToast.toast("Select a shape first to rotate")
+        return
 
     if canvas_instance.mouse_pressed != '':
         canvas_instance.dragging = True

@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
-    from geometry.three_dimensional.shape import Shape
 
+from geometry.three_dimensional.shape import Shape
 from .__key_status import __get_key_status
 from typing import Dict, List
 from tkinter import Event
@@ -33,7 +33,7 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
     if key == 'r':
         canvas_instance.pressed_key = ''
 
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.rotate_shape = False
-                return
+        if not Shape.selected_shape:
+            return
+
+        Shape.selected_shape.rotate_shape = False

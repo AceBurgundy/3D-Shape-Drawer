@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
+from geometry.three_dimensional.shape import Shape
 from .__key_status import __get_key_status
+from CTkToast import CTkToast
+
 from typing import Dict, List
 from tkinter import Event
 from OpenGL.GLU import *
@@ -23,7 +26,7 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
     """
     press_status: Dict[str, List[str]|str] = __get_key_status(event)
     state: List[str] = press_status.get('state', None)
-    key: List[str]|str = press_status['key']
+    key: List[str]|str = press_status.get('key', None)
 
     if state:
         pressed_shift: bool = 'Shift' in state
@@ -38,7 +41,7 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
             __handle_shift(canvas_instance, key)
             return
 
-    if type(key == 'str'):
+    if key and type(key) == 'str':
         __handle_key(canvas_instance, key)
 
 def __handle_shift(canvas_instance: Canvas, key: str) -> None:
@@ -49,17 +52,15 @@ def __handle_shift(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    if key == 'Up':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_up()
-                return
+    if key == 'Up' and Shape.selected_shape:
+        Shape.selected_shape.move_up()
+    else:
+        CTkToast.message("To move up select a shape first")
 
-    if key == 'Down':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_down()
-                return
+    if key == 'Down' and Shape.selected_shape:
+        Shape.selected_shape.move_down()
+    else:
+        CTkToast.message("To move down select a shape first")
 
 def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
     """
@@ -69,17 +70,15 @@ def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    if key == 'Left':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.resize(False)
-                return
+    if key == 'Left' and Shape.selected_shape:
+        Shape.selected_shape.resize(False)
+    else:
+        CTkToast.toast("To move left select a shape first")
 
-    if key == 'Right':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.resize()
-                return
+    if key == 'Right' and Shape.selected_shape:
+        Shape.selected_shape.resize()
+    else:
+        CTkToast.toast("To move right select a shape first")
 
 def __handle_key(canvas_instance: Canvas, key: str) -> None:
     """
@@ -90,28 +89,28 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'Up':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_forward()
-                return
+        if not Shape.selected_shape:
+            CTkToast.toast("To move up select a shape first")
+        else:
+            Shape.selected_shape.move_forward()
 
     elif key == 'Down':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_backward()
-                return
+        if not Shape.selected_shape:
+            CTkToast.toast("To move down select a shape first")
+        else:
+            Shape.selected_shape.move_backward()
 
-    if key == 'Left':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_left()
-                return
+    elif key == 'Left':
+        if not Shape.selected_shape:
+            CTkToast.toast("To move left select a shape first")
+        else:
+            Shape.selected_shape.move_left()
 
     elif key == 'Right':
-        for shape in canvas_instance.shapes:
-            if shape.selected:
-                shape.move_right()
-                return
+        if not Shape.selected_shape:
+            CTkToast.toast("To move right select a shape first")
+        else:
+            Shape.selected_shape.move_right()
 
     elif key == 'r':
         canvas_instance.pressed_key = key
