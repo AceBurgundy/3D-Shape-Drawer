@@ -116,12 +116,7 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
         if not Shape.selected_shape:
             CTkToast.toast("To delete, select a shape first")
         else:
-            for shape in canvas_instance.shapes:
-                if shape.id == Shape.selected_shape.id:
-                    del Shape.buffer_colors[Shape.selected_shape.id]
-                    canvas_instance.shapes.remove(shape)
-                    Shape.selected_shape = None
-                    return
+            Shape.selected_shape.delete()
 
     elif key == 'r':
         canvas_instance.pressed_key = key

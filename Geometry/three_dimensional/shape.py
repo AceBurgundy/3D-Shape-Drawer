@@ -305,6 +305,21 @@ class Shape(ABC):
         GLU.gluSphere(quadric, radius, 10, 10)
         GL.glPopMatrix()
 
+    def delete(self) -> None:
+        """
+        Deletes a shape by removing its assigned buffer color and removing it from the Canvas's shapes.
+        """
+        from frame.three_dimensional.canvas import Canvas
+
+        del Shape.buffer_colors[Shape.selected_shape.id]
+        for shape in Canvas.shapes:
+            if shape.id == Shape.selected_shape.id:
+                Canvas.shapes.remove(shape)
+                break
+
+        Shape.selected_shape = None
+        return
+
     @abstractmethod
     def resize(self, increment: bool=True) -> None:
         """
