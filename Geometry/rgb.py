@@ -1,8 +1,8 @@
-from typing import Iterable, Callable, Tuple
+from typing import Iterable, Callable, Tuple, ValuesView
 from custom_types import *
 from random import random
 
-def random_rgb(exemption_list: RGBS|None = None) -> RGB:
+def random_rgb(exemption_list: Optional[ValuesView[RGB]] = None) -> RGB:
     """
     Generates random RGB float values between 0.0 and 1.0 for OpenGL.GL.
     Ensures the generated RGB tuple is unique in the buffer_colors.
@@ -14,7 +14,7 @@ def random_rgb(exemption_list: RGBS|None = None) -> RGB:
         Tuple: A Tuple containing three random float values between 0.0 and 1.0 representing RGB color.
     """
     color: Callable = lambda: round(random(), 2)
-    new_rgb: Callable = lambda: tuple(color() for _ in range(3))
+    new_rgb: Callable = lambda: (color(), color(), color())
 
     new_color = new_rgb()
 
