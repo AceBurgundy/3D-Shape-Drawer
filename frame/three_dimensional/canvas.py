@@ -13,7 +13,6 @@ import OpenGL.GL as GL
 
 from tkinter import Event
 from typing import List
-from math import *
 import pyopengltk
 
 # key methods
