@@ -8,9 +8,31 @@ class CTkToast(CTkFrame):
     """
 
     __instance: Optional['CTkToast'] = None
-    get_instance: Callable = lambda: CTkToast() if CTkToast.__instance is None else CTkToast.__instance
+
+    @staticmethod
+    def get_instance() -> 'CTkToast':
+        """
+        Retrieves the current instance of the Toast
+        """
+        if CTkToast.__instance is None:
+            CTkToast.__instance = CTkToast()
+
+        return CTkToast.__instance
 
     def __init__(self, master: Optional[CTk] = None, position: Optional[Tuple[int, int]] = None, delay: int = 2000, **kwargs):
+        """
+        Initializes an instance of a custom widget.
+
+        Args:
+            master (Optional[CTk]): The parent widget. Defaults to None.
+            position (Optional[Tuple[int, int]]): The position coordinates (x, y) of the widget. Defaults to None.
+            delay (int): The delay time in milliseconds. Defaults to 2000.
+            **kwargs: Additional keyword arguments to configure the widget.
+
+        Note:
+            The widget is placed at the center bottom of the parent widget if no position is specified.
+            Background color (bg_color) and border color (border_color) are set to black by default.
+        """
         super().__init__(master=master, **kwargs)
 
         self.delay: int = delay
@@ -23,10 +45,13 @@ class CTkToast(CTkFrame):
             x, y = position[0], position[1]
             self.place(x=x, y=y)
 
-        self.configure(bg_color="#000000", border_color="#000000")
+        self.configure(bg_color="#000000", border_color="#000000", border_width = 0)
 
     @staticmethod
     def toast(message: str) -> None:
+        """
+        Adds a new toast message inside the current instance of toast
+        """
         instance: CTkToast = CTkToast.get_instance()
 
         if message.strip() == '':
