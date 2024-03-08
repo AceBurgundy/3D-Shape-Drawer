@@ -1,7 +1,15 @@
+# for type checking purposes.
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from Navigation import Navigation
+
 from customtkinter import CTkButton
 from CTkColorPicker import AskColor
 from geometry.rgb import hex_to_rgb
-from Navigation import Navigation
 from CTkToast import CTkToast
 
 from geometry.three_dimensional.shape import Shape
