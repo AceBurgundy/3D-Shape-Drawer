@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
 from geometry.three_dimensional.shape import Shape
-from .__key_status import __get_key_status
+from .__key_status import get_key_status
 from CTkToast import CTkToast
 
 from typing import Dict, List
 from tkinter import Event
-from OpenGL.GLU import *
-from OpenGL.GL import *
+
+toast: Callable = lambda command_name: CTkToast.toast(f"To {command_name.replace('_', ' ')}, select a shape first")
+run: Callable = lambda command, *args: getattr(Shape.selected_shape, command.__name__)(*args)
+command_or_toast: Callable = lambda command, *args: run(command, *args) if Shape.selected_shape is not None else toast(command.__name__)
 
 def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
     """
@@ -24,9 +26,12 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    press_status: Dict[str, List[str]|str] = __get_key_status(event)
-    state: List[str] = press_status.get('state', None)
-    key: List[str]|str = press_status.get('key', None)
+    press_status: Dict[str, List[str]|str] = get_key_status(event)
+    state: Union[List[str], str, None] = press_status.get('state', None)
+    key: Union[List[str], str, None] = press_status.get('key', None)
+
+    if type(key) != str:
+        return
 
     if state:
         pressed_shift: bool = 'Shift' in state
@@ -52,15 +57,13 @@ def __handle_shift(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    if key == 'Up' and Shape.selected_shape:
-        Shape.selected_shape.move_up()
-    else:
-        CTkToast.toast("To move up select a shape first")
+    if key == 'Up':
+        command_or_toast(Shape.move_up)
+        return
 
-    if key == 'Down' and Shape.selected_shape:
-        Shape.selected_shape.move_down()
-    else:
-        CTkToast.toast("To move down select a shape first")
+    if key == 'Down':
+        command_or_toast(Shape.move_down)
+        return
 
 def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
     """
@@ -70,15 +73,13 @@ def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    if key == 'Left' and Shape.selected_shape:
-        Shape.selected_shape.resize(False)
-    else:
-        CTkToast.toast("To move left select a shape first")
+    if key == 'Left':
+        command_or_toast(Shape.resize, True)
+        return
 
-    if key == 'Right' and Shape.selected_shape:
-        Shape.selected_shape.resize()
-    else:
-        CTkToast.toast("To move right select a shape first")
+    if key == 'Right':
+        command_or_toast(Shape.resize)
+        return
 
 def __handle_key(canvas_instance: Canvas, key: str) -> None:
     """
@@ -88,11 +89,6 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
-    toast: Callable = lambda command_name: CTkToast.toast(f"To {command_name.replace('_', ' ')}, select a shape first")
-    run: Callable = lambda command: getattr(Shape.selected_shape, command.__name__)()
-
-    command_or_toast: Callable = lambda command: run(command) if Shape.selected_shape is not None else toast(command.__name__)
-
     if key == 'Up':
         command_or_toast(Shape.move_forward)
         return
@@ -110,7 +106,7 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
         return
 
     elif key == 'Delete':
-        command_or_toast(Shape.selected_shap)
+        command_or_toast(Shape.delete)
         return
 
     elif key == 'r':
