@@ -1,14 +1,19 @@
 from geometry.rgb import process_rgb, random_rgb
-import save as save_functions
+from CTkToast import CTkToast
 from custom_types import *
 from constants import *
 
 from abc import ABC, abstractmethod
-from typing import Dict
-from math import *
+from typing import Any, Dict, KeysView, ValuesView
+from pathlib import Path
+from os import path
+from save import *
+import inspect
+import pickle
 
 import OpenGL.GLU as GLU
 import OpenGL.GL as GL
+
 
 class Shape(ABC):
     """
@@ -33,8 +38,8 @@ class Shape(ABC):
     default_increment: int = 1
     grid_color: RGB = BLACK
 
-    shape_ids: List[int] = buffer_colors.keys()
-    current_buffer_colors: RGBS = buffer_colors.values()
+    shape_ids: KeysView[int] = buffer_colors.keys()
+    current_buffer_colors: ValuesView[RGB] = buffer_colors.values()
 
     mouse_x: int = 0
     mouse_y: int = 0
@@ -62,14 +67,14 @@ class Shape(ABC):
         Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
 
         self.__background_color: RGB = GREY
-        self.__texture_path: str = ''
+        self.__texture_path: Optional[str] = ''
 
         self.rotate_shape: bool = False
         self.show_grid: bool = False
         self.selected: bool = False
 
-        self.__rotation_x: int = 0.0
-        self.__rotation_y: int = 0.0
+        self.__rotation_x: int = 0
+        self.__rotation_y: int = 0
 
         # list of vertex (for creating dots)
         self.vertices: VERTICES = []
@@ -80,73 +85,78 @@ class Shape(ABC):
         self.__z: int = 0
 
     @property
+    def assigned_buffer_color(self):
+        """
+        The unique background color used by the shape for color picking
+        """
+        return Shape.buffer_colors[self.id]
+
+    @property
     def background_color(self):
         """
-        RGB: The background color of the shape.
+        background_color (RGB): The background color of the shape.
         """
         return self.__background_color
 
     @property
     def rotation_x(self):
         """
-        INT: the x rotation of the shape.
+        rotation_x (int): the x rotation of the shape.
         """
         return self.__rotation_x
 
     @property
     def rotation_y(self):
         """
-        INT: the y rotation of the shape.
+        rotation_y (int): the y rotation of the shape.
         """
         return self.__rotation_y
 
     @property
     def texture_path(self):
         """
-        str: The path to the texture.
+        texture_path (str): The path to the texture.
         """
         return self.__texture_path
 
     @property
     def angle(self) -> NUMBER:
         """
-        NUMBER: The angle of rotation.
+        angle (NUMBER): The angle of rotation.
         """
         return self.__angle
 
     @property
     def x(self) -> int:
         """
-        int: The X-coordinate.
+        x (int): The X-coordinate.
         """
         return self.__x
 
     @property
     def y(self) -> int:
         """
-        int: The Y-coordinate.
+        y (int): The Y-coordinate.
         """
         return self.__y
 
     @property
     def z(self) -> int:
         """
-        int: The Z-coordinate.
+        z (int): The Z-coordinate.
         """
         return self.__z
 
     @property
-    def id(self):
+    def id(self) -> int:
         """
-        int: The unique identifier of the shape.
+        id (int): The unique identifier of the shape.
         """
         return self.__id
 
     @background_color.setter
     def background_color(self, rgb_argument: RGB):
         """
-        Sets the background color of the shape.
-
         Args:
             rgb_argument (RGB): The RGB color value.
 
@@ -159,71 +169,59 @@ class Shape(ABC):
         self.__background_color = process_rgb(rgb_argument)
 
     @rotation_x.setter
-    def rotation_x(self, rotation: int) -> None:
+    def rotation_x(self, new_rotation: int) -> None:
         """
-        Sets the x rotation of the shape.
-
         Args:
-            rotation (int): The rotation value.
+            new_rotation (int): The new rotation value.
         """
-        self.__rotation_x = rotation
+        self.__rotation_x = new_rotation
 
     @rotation_y.setter
-    def rotation_y(self, rotation: int) -> None:
+    def rotation_y(self, new_rotation: int) -> None:
         """
-        Sets the y rotation of the shape.
-
         Args:
-            rotation (int): The rotation value.
+            new_rotation (int): The new rotation value.
         """
-        self.__rotation_y = rotation
+        self.__rotation_y = new_rotation
 
     @texture_path.setter
     def texture_path(self):
         """
-        Sets the path to the texture.
+        Sets the path to the texture
         """
-        self.__texture_path: str = save_functions.open_file_dialog()
+        self.__texture_path = open_file_dialog()
 
     @angle.setter
-    def angle(self, angle: NUMBER) -> None:
+    def angle(self, new_angle: NUMBER) -> None:
         """
-        Sets the angle of rotation.
-
         Args:
-            angle (NUMBER): The angle value.
+            new_angle (NUMBER): The new angle value.
         """
-        self.__angle = angle
+        self.__angle = new_angle
 
     @x.setter
-    def x(self, x: int) -> None:
+    def x(self, new_x: int) -> None:
         """
-        Sets the X-coordinate.
-
         Args:
-            x (int): The X-coordinate value.
+            new_x (int): The new X-coordinate value.
         """
-        self.__x = x
+        self.__x = new_x
 
     @y.setter
-    def y(self, y: int) -> None:
+    def y(self, new_y: int) -> None:
         """
-        Sets the Y-coordinate.
-
         Args:
-            y (int): The Y-coordinate value.
+            new_y (int): The new Y-coordinate value.
         """
-        self.__y = y
+        self.__y = new_y
 
     @z.setter
-    def z(self, z: int) -> None:
+    def z(self, new_z: int) -> None:
         """
-        Sets the Z-coordinate.
-
         Args:
-            z (int): The Z-coordinate value.
+            new_z (int): The new Z-coordinate value.
         """
-        self.__z = z
+        self.__z = new_z
 
     def draw_to_canvas(self, offscreen: bool = False) -> None:
         """
@@ -269,7 +267,7 @@ class Shape(ABC):
         GL.glPopMatrix()
         GL.glFlush()
 
-    abstractmethod
+    @abstractmethod
     def draw(self, offscreen: bool = False) -> None:
         """
         Abstract method to draw the shape.
@@ -309,6 +307,9 @@ class Shape(ABC):
         """
         Deletes a shape by removing its assigned buffer color and removing it from the Canvas's shapes.
         """
+        if Shape.selected_shape is None:
+            return
+
         from frame.three_dimensional.canvas import Canvas
 
         del Shape.buffer_colors[Shape.selected_shape.id]
@@ -326,6 +327,86 @@ class Shape(ABC):
         Increases or decreases the size of the shape by several pixels.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def export_to_file(cls) -> bool:
+        """
+        Save a list of class instances and static fields to a file with the .pkl format.
+
+        Returns:
+            bool: If the file has been saved succesfully
+        """
+        from frame.three_dimensional.canvas import Canvas
+
+        file_path: str|None = save_file_dialog()
+
+        if file_path is None:
+            CTkToast.toast('Cancelled file selection')
+            return False
+
+        static_fields = {}
+        for name, value in inspect.getmembers(cls):
+            if not name.startswith('__') and not inspect.ismethod(value):
+                static_fields[name] = value
+
+        try:
+            export_data: Dict[str, Any] = {
+                "static_fields": static_fields,
+                "shapes": Canvas.shapes
+            }
+
+            with open(file_path, 'wb') as f:
+                pickle.dump(export_data, f)
+                CTkToast.toast('Exported')
+            return True
+
+        except Exception as error:
+            CTkToast.toast(f"An error occurred while opening the file: {error}")
+
+        return False
+
+    @classmethod
+    def import_from_file(cls):
+        """
+        Import a list of class instances and static fields from a file with the .pkl format.
+
+        Args:
+        file_path (str): The path of the file to import.
+
+        Returns:
+        list: The imported list of class instances.
+        """
+        from frame.three_dimensional.canvas import Canvas
+
+        file_path: Optional[str] = open_file_dialog()
+
+        if file_path is None:
+            CTkToast.toast('Cancelled selection')
+            return
+
+        if not path.isfile(file_path):
+            CTkToast.toast('Path must be a file')
+            return
+
+        if Path(file_path).suffix != '.pkl':
+            CTkToast.toast('File is not supported')
+            return
+
+        with open(file_path, 'rb') as file:
+            imported_data: Dict[str, Any] = pickle.load(file)
+
+        static_fields: Dict[str, Any] = imported_data.get('static_fields', None)
+        shapes: List['Shape'] = imported_data.get('shapes', None)
+
+        if static_fields is None or shapes is None:
+            CTkToast.toast('Invalid imported file')
+            return False
+
+        for name, value in static_fields.items():
+            setattr(cls, name, value)
+
+        if len(shapes) > 0:
+            Canvas.shapes = shapes
 
     def move_up(self) -> None:
         """
