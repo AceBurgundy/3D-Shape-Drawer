@@ -7,9 +7,9 @@ from geometry.three_dimensional.shapes.cone import Cone
 
 from geometry.three_dimensional.shape import Shape
 
-from typing import Dict, Callable, List
+from typing import Dict, Type, List
 
-def shape_class_references() -> Dict[str, Callable]:
+def shape_class_references() -> Dict[str, Type[Shape]]:
     """
     Returns a dictionary with shape names and their class instance
     """
