@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, List
-
-from save import export_to_file, import_from_file
+from typing import TYPE_CHECKING, Any, Optional, Type, List
 
 if TYPE_CHECKING:
     from Program import App
@@ -13,7 +11,7 @@ from geometry.three_dimensional.shape_list import shape_class_references, shape_
 from buttons.change_color_toggle import ColorPickerToggle
 from geometry.three_dimensional.shape import Shape
 from frame.three_dimensional.canvas import Canvas
-
+from CTkToast import CTkToast
 from customtkinter import *
 from constants import *
 
@@ -39,15 +37,20 @@ class Navigation(CTkFrame):
             Args:
                 choice (str): The choice the user selected
             """
-            shape_reference: Type[Shape] = shape_class_references().get(choice)
-            shape_instance: Type[Shape] = shape_reference()
+            shape_reference: Optional[Type[Shape]] = shape_class_references().get(choice, None)
+
+            if shape_reference is None:
+                CTkToast.toast('Cannot find shape')
+                return
+
+            shape_instance: Shape = shape_reference()
             Canvas.shapes.append(shape_instance)
 
-        buttons: List[Type[CTk]] = [
+        buttons: List[Any] = [
             CTkOptionMenu(self, width=80, height=20, values=shape_names(), command=add_shape),
             ColorPickerToggle(self, width=75, height=15, text="Color"),
-            CTkButton(self, width=75, height=15, text="Import", command=import_from_file),
-            CTkButton(self, width=75, height=15, text="Export", command=export_to_file)
+            CTkButton(self, width=75, height=15, text="Import", command=Shape.import_from_file),
+            CTkButton(self, width=75, height=15, text="Export", command=Shape.export_to_file)
         ]
 
         for index, button in enumerate(buttons):
