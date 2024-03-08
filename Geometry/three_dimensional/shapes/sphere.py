@@ -1,6 +1,6 @@
 from geometry.three_dimensional.shape import Shape
+from math import pi, sin, cos
 from typing import override
-from math import *
 
 from custom_types import *
 from constants import *
@@ -16,13 +16,58 @@ class Sphere(Shape):
 
         Args:
             radius (NUMBER): the radius of the sphere. Defaults to 1.5
-            slices (NUMBER): the slices of the sphere. Defaults to 35
-            stacks (NUMBER): the stacks of the sphere. Defaults to 35
+            slices (NUMBER): the slices of the sphere. Defaults to 25
+            stacks (NUMBER): the stacks of the sphere. Defaults to 25
         """
         super().__init__()
-        self.radius: NUMBER = radius
-        self.slices: int = slices
-        self.stacks: int = stacks
+        self.__radius: NUMBER = radius
+        self.__slices: int = slices
+        self.__stacks: int = stacks
+
+    @property
+    def radius(self):
+        """
+        radius (NUMBER): radius of the shape
+        """
+        return self.__radius
+
+    @property
+    def slices(self):
+        """
+        slices (int): slices of the shape
+        """
+        return self.__slices
+
+    @property
+    def stacks(self):
+        """
+        stacks (int): stacks of the shape
+        """
+        return self.__stacks
+
+    @radius.setter
+    def radius(self, new_radius: NUMBER) -> None:
+        """
+        Args:
+            new_radius (NUMBER): the new radius of the shape
+        """
+        self.__radius = new_radius
+
+    @slices.setter
+    def slices(self, new_slices: int) -> None:
+        """
+        Args:
+            new_slices (int): the new slices of the shape
+        """
+        self.__slices = new_slices
+
+    @stacks.setter
+    def stacks(self, new_stacks: int) -> None:
+        """
+        Args:
+            new_stacks (int): the new stacks of the shape
+        """
+        self.__stacks = new_stacks
 
     @override
     def resize(self, increment: bool = True) -> None:
@@ -46,8 +91,8 @@ class Sphere(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
-        GL.glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
+
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
         quadric = GLU.gluNewQuadric()
         GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)

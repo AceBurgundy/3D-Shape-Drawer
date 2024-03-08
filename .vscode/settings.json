@@ -8,5 +8,6 @@
         ".gitignore": true,
         "__init__.py": true,
         "env": true
-    }
+    },
+    "python.analysis.typeCheckingMode": "basic"
 }

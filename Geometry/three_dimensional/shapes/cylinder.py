@@ -1,11 +1,12 @@
-from OpenGL.GL import GL_LINES, GL_BLEND, glBegin, glEnd, glVertex3f, glColor3f, glDisable
-from OpenGL.GLU import GLU_FILL, gluNewQuadric, gluCylinder, gluQuadricDrawStyle
 from geometry.three_dimensional.shape import Shape
 from typing import Any, override
-from math import *
+from math import pi, sin, cos
 
 from custom_types import *
 from constants import *
+
+import OpenGL.GLU as GLU
+import OpenGL.GL as GL
 
 class Cylinder(Shape):
 
@@ -19,9 +20,54 @@ class Cylinder(Shape):
             slices (NUMBER): the slices (smoothness) of the sphere. Defaults to 3
         """
         super().__init__()
-        self.radius: NUMBER = radius
-        self.height: NUMBER = height
-        self.slices: int = slices
+        self.__radius: NUMBER = radius
+        self.__height: NUMBER = height
+        self.__slices: int = slices
+
+    @property
+    def radius(self) -> NUMBER:
+        """
+        radius (NUMBER): the shapes radius
+        """
+        return self.__radius
+
+    @property
+    def height(self) -> NUMBER:
+        """
+        height (NUMBER): the shapes height
+        """
+        return self.__height
+
+    @property
+    def slices(self) -> int:
+        """
+        slices (int): the shapes slices
+        """
+        return self.__slices
+
+    @radius.setter
+    def radius(self, new_radius: NUMBER) -> None:
+        """
+        Args:
+            new_radius (NUMBER): the new shapes radius
+        """
+        self.__radius = new_radius
+
+    @height.setter
+    def height(self, new_height: NUMBER) -> None:
+        """
+        Args:
+            new_height (NUMBER): the new shapes height
+        """
+        self.__height = new_height
+
+    @slices.setter
+    def slices(self, new_slices: int) -> None:
+        """
+        Args:
+            new_slices (int): the new shapes slices
+        """
+        self.__slices = new_slices
 
     @override
     def resize(self, increment: bool = True) -> None:
@@ -49,10 +95,10 @@ class Cylinder(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        assigned_buffer_color: RGB = Shape.buffer_colors[self.id]
-        glColor3f(*self.background_color if not offscreen else assigned_buffer_color)
 
-        quadric = gluNewQuadric()
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+
+        quadric = GLU.gluNewQuadric()
         cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
             quadric,
             self.radius, self.radius,
@@ -60,8 +106,8 @@ class Cylinder(Shape):
             self.slices, self.slices
         )
 
-        gluQuadricDrawStyle(quadric, GLU_FILL)
-        gluCylinder(*cylinder_arguments)
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+        GLU.gluCylinder(*cylinder_arguments)
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -74,9 +120,9 @@ class Cylinder(Shape):
         super().draw_grid()
 
         angle_increment: float = 2 * pi / self.slices
-        glColor3f(*Shape.grid_color)
+        GL.glColor3f(*Shape.grid_color)
 
-        glBegin(GL_LINES)
+        GL.glBegin(GL.GL_LINES)
 
         # Draw vertical lines along the circumference
         for index in range(self.slices):
@@ -94,7 +140,7 @@ class Cylinder(Shape):
             ]
 
             for vertex in vertical_vertices:
-                glVertex3f(*vertex)
+                GL.glVertex3f(*vertex)
                 self.vertices.append(vertex)
 
         # Draw horizontal lines connecting vertices at the same height
@@ -118,10 +164,10 @@ class Cylinder(Shape):
             ]
 
             for vertex in horizontal_vertices:
-                glVertex3f(*vertex)
+                GL.glVertex3f(*vertex)
                 self.vertices.append(vertex)
 
-        glEnd()
+        GL.glEnd()
 
         if len(self.vertices) > 0:
             for vertex in self.vertices:
