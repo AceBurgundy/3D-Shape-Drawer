@@ -1,7 +1,7 @@
 from typing import Dict, List
 from tkinter import Event
 
-def __get_key_status(event: Event):
+def get_key_status(event: Event):
     """
     Filters data returned by CTk Key Press event
 
