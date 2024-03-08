@@ -1,6 +1,8 @@
-from OpenGL.GL import GLU_FILL, gluQuadricDrawStyle, glPushMatrix, glTranslatef, gluNewQuadric, glPopMatrix, gluSphere, glColor3f
-from utilities.custom_types import *
-from utilities.constants import *
+from custom_types import *
+from constants import *
+
+import OpenGL.GLU as GLU
+import OpenGL.GL as GL
 
 class Vertex:
 
@@ -28,12 +30,12 @@ class Vertex:
         """
         Draws a dot on the specified coordinate
         """
-        glColor3f(*ORANGE if self.selected else self.background_color)
+        GL.glColor3f(*ORANGE if self.selected else self.background_color)
         radius: float = 0.02
 
-        glPushMatrix()
-        glTranslatef(self.x, self.y, self.z)
-        quadric = gluNewQuadric()
-        gluQuadricDrawStyle(quadric, GLU_FILL)
-        gluSphere(quadric, radius, 10, 10)
-        glPopMatrix()
+        GL.glPushMatrix()
+        GL.glTranslatef(self.x, self.y, self.z)
+        quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+        GLU.gluSphere(quadric, radius, 10, 10)
+        GL.glPopMatrix()
