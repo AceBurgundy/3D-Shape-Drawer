@@ -74,7 +74,7 @@ def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'Left':
-        command_or_toast(Shape.resize, True)
+        command_or_toast(Shape.resize, False)
         return
 
     if key == 'Right':
