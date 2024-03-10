@@ -73,6 +73,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         self.camera_y_translate: float = 0.0
         self.camera_x_translate: float = 0.0
         self.camera_zoom_translate: int|float = -8
+        self.render_distance: int = 1000
 
     @property
     def camera_translation(self) -> List[float]:
@@ -146,7 +147,7 @@ class Canvas(pyopengltk.OpenGLFrame):
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
 
-    def __draw_grid(self, distance: int = 100, opacity: float = 0.2) -> None:
+    def __draw_grid(self, distance: int = 200, opacity: float = 0.2) -> None:
         """
         Draw grid lines
         """
@@ -182,7 +183,7 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
-        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
+        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, self.render_distance)
 
         GL.glMatrixMode(GL.GL_MODELVIEW)
         GL.glLoadIdentity()
@@ -208,7 +209,7 @@ class Canvas(pyopengltk.OpenGLFrame):
 
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
-        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, 150)
+        GLU.gluPerspective(45, (Canvas.width / Canvas.height), 1, self.render_distance)
 
         GL.glMatrixMode(GL.GL_MODELVIEW)
         GL.glLoadIdentity()
