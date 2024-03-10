@@ -83,6 +83,7 @@ class Sphere(Shape):
             if self.radius > Shape.default_increment:
                 self.radius -= Shape.default_increment
 
+
     @override
     def draw(self, offscreen: bool = False) -> None:
         """
@@ -91,15 +92,38 @@ class Sphere(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
         quadric = GLU.gluNewQuadric()
         GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+
+        if self.use_texture and not offscreen:
+            self.attach_texture()
+
         GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)
 
         if not offscreen and self.selected:
             self.draw_grid()
+
+    @override
+    def attach_texture(self) -> None:
+        """
+        Attaches texture to the sphere
+        """
+        super().attach_texture()
+
+        # Set up texture coordinates using GL_OBJECT_LINEAR mode
+        GL.glEnable(GL.GL_TEXTURE_GEN_S)
+        GL.glEnable(GL.GL_TEXTURE_GEN_T)
+        GL.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR)
+        GL.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR)
+
+        # Set up texture matrix
+        GL.glMatrixMode(GL.GL_TEXTURE)
+        GL.glLoadIdentity()
+        GL.glTranslatef(self.x, self.y, self.z)
+        GL.glScalef(1.0 / self.radius, 1.0 / self.radius, 1.0 / self.radius)  # Scale texture coordinates to match object scale
+        GL.glMatrixMode(GL.GL_MODELVIEW)
 
     @override
     def draw_grid(self) -> None:
