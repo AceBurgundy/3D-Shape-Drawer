@@ -1,9 +1,10 @@
-from OpenGL.GL import GL_QUADS, GL_LINES, glVertex3fv, glBegin, glColor3f, glEnd
 from geometry.three_dimensional.shape import Shape
 from typing import override
 
 from custom_types import *
 from constants import *
+
+import OpenGL.GL as GL
 
 class Cuboid(Shape):
 
@@ -124,21 +125,27 @@ class Cuboid(Shape):
             (-self.half_width, self.half_height, self.half_depth)     # Vertex 7
         ]
 
-        glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
-        glBegin(GL_QUADS)
-        for face in (
+        if self.use_texture and not offscreen:
+            self.attach_texture()
+
+        faces: Tuple[Tuple[int, int, int, int], ...] = (
             (0, 1, 2, 3),  # front face
             (4, 5, 6, 7),  # back face
             (0, 4, 7, 3),  # left face
             (1, 5, 6, 2),  # right face
             (0, 1, 5, 4),  # bottom face
             (3, 2, 6, 7)   # top face
-        ):
-            for vertex in face:
-                glVertex3fv(self.vertices[vertex])
+        )
 
-        glEnd()
+        GL.glBegin(GL.GL_QUADS)
+
+        for face in faces:
+            for index in face:
+                GL.glVertex3fv(self.vertices[index])
+
+        GL.glEnd()
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -150,18 +157,22 @@ class Cuboid(Shape):
         """
         super().draw_grid()
 
-        glColor3f(*Shape.grid_color)
-        glBegin(GL_LINES)
+        GL.glColor3f(*Shape.grid_color)
+        GL.glBegin(GL.GL_LINES)
 
-        for edge in (
+        edges: Tuple[Tuple[int, int], ...] = (
             (0, 1), (1, 2), (2, 3), (3, 0),
             (4, 5), (5, 6), (6, 7), (7, 4),
             (0, 4), (1, 5), (2, 6), (3, 7)
-        ):
-            for vertex in edge:
-                glVertex3fv(self.vertices[vertex])
+        )
 
-        glEnd()
+        GL.glBegin(GL.GL_LINES)
+
+        for edge in edges:
+            for index in edge:
+                GL.glVertex3fv(self.vertices[index])
+
+        GL.glEnd()
 
         for vertex in self.vertices:
             self.draw_dot_at(*vertex)

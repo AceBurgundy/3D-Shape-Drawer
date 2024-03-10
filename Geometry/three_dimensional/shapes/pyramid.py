@@ -71,10 +71,6 @@ class Pyramid(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-
-        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
-        GL.glBegin(GL.GL_TRIANGLES)
-
         top_point: VERTEX = (0.0, 0.0, self.height)  # Swap y and z coordinates
         front_left: VERTEX = (-self.base_length / 2, -self.base_length / 2, 0.0)
         front_right: VERTEX = (self.base_length / 2, -self.base_length / 2, 0.0)
@@ -89,6 +85,13 @@ class Pyramid(Shape):
             top_point, back_right, back_left,
             top_point, back_left, front_left
         ]
+
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+
+        if self.use_texture and not offscreen:
+            self.attach_texture()
+
+        GL.glBegin(GL.GL_TRIANGLES)
 
         for vertex in self.vertices:
             GL.glVertex3f(*vertex)
@@ -108,13 +111,17 @@ class Pyramid(Shape):
         GL.glColor3f(*Shape.grid_color)
 
         GL.glBegin(GL.GL_LINE_LOOP)
+
         for corner in corners:
             GL.glVertex3f(*corner)
             GL.glVertex3f(*self.vertices[0])
+
         GL.glEnd()
 
         GL.glBegin(GL.GL_LINES)
+
         for index in range(len(corners)):
             GL.glVertex3f(*corners[index])
             GL.glVertex3f(*corners[(index + 1) % len(corners)])
+
         GL.glEnd()

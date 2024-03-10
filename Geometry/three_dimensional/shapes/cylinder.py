@@ -99,6 +99,8 @@ class Cylinder(Shape):
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
         quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+
         cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
             quadric,
             self.radius, self.radius,
@@ -106,7 +108,9 @@ class Cylinder(Shape):
             self.slices, self.slices
         )
 
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+        if self.use_texture and not offscreen:
+            self.attach_texture()
+
         GLU.gluCylinder(*cylinder_arguments)
 
         if not offscreen and self.selected:

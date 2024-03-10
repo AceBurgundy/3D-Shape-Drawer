@@ -97,11 +97,15 @@ class Cone(Shape):
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
         quadric = GLU.gluNewQuadric()
+        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
         cone_arguments: Tuple[Any, float, Literal[0], float, int, int] = (
             quadric, self.radius, 0, self.height, self.slices, self.slices
         )
 
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
+
+        if self.use_texture and not offscreen:
+            self.attach_texture()
+
         GLU.gluCylinder(*cone_arguments)
 
         if not offscreen and self.selected:
