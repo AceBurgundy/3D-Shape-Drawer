@@ -83,7 +83,6 @@ class Sphere(Shape):
             if self.radius > Shape.default_increment:
                 self.radius -= Shape.default_increment
 
-
     @override
     def draw(self, offscreen: bool = False) -> None:
         """
