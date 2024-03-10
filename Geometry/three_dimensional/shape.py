@@ -3,9 +3,10 @@ from CTkToast import CTkToast
 from custom_types import *
 from constants import *
 
-from abc import ABC, abstractmethod
 from typing import Any, Dict, KeysView, ValuesView
+from abc import ABC, abstractmethod
 from pathlib import Path
+from PIL import Image
 from os import path
 from save import *
 import inspect
@@ -13,7 +14,6 @@ import pickle
 
 import OpenGL.GLU as GLU
 import OpenGL.GL as GL
-
 
 class Shape(ABC):
     """
@@ -67,14 +67,19 @@ class Shape(ABC):
         Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
 
         self.__background_color: RGB = GREY
-        self.__texture_path: Optional[str] = ''
+        self.__texture_path: str = "textures\\kahoy.jpg"
 
+        self.show_texture: bool = False
         self.rotate_shape: bool = False
         self.show_grid: bool = False
         self.selected: bool = False
 
         self.__rotation_x: int = 0
         self.__rotation_y: int = 0
+
+        self.__use_texture: bool = True
+        self.texture_loaded = False
+        self.texture_id = None
 
         # list of vertex (for creating dots)
         self.vertices: VERTICES = []
@@ -85,35 +90,42 @@ class Shape(ABC):
         self.__z: int = 0
 
     @property
-    def assigned_buffer_color(self):
+    def assigned_buffer_color(self) -> RGB:
         """
         The unique background color used by the shape for color picking
         """
         return Shape.buffer_colors[self.id]
 
     @property
-    def background_color(self):
+    def background_color(self) -> RGB:
         """
         background_color (RGB): The background color of the shape.
         """
         return self.__background_color
 
     @property
-    def rotation_x(self):
+    def use_texture(self) -> bool:
+        """
+        use_texture (bool): If the shape must use the texture
+        """
+        return self.__use_texture
+
+    @property
+    def rotation_x(self) -> int:
         """
         rotation_x (int): the x rotation of the shape.
         """
         return self.__rotation_x
 
     @property
-    def rotation_y(self):
+    def rotation_y(self) -> int:
         """
         rotation_y (int): the y rotation of the shape.
         """
         return self.__rotation_y
 
     @property
-    def texture_path(self):
+    def texture_path(self) -> str:
         """
         texture_path (str): The path to the texture.
         """
@@ -168,6 +180,14 @@ class Shape(ABC):
         """
         self.__background_color = process_rgb(rgb_argument)
 
+    @use_texture.setter
+    def use_texture(self, new_value: bool) -> None:
+        """
+        Args:
+            new_value (bool): The new value for use_texture.
+        """
+        self.__use_texture = new_value
+
     @rotation_x.setter
     def rotation_x(self, new_rotation: int) -> None:
         """
@@ -189,7 +209,13 @@ class Shape(ABC):
         """
         Sets the path to the texture
         """
-        self.__texture_path = open_file_dialog()
+        received_path: Optional[str] = open_file_dialog()
+
+        if received_path is None:
+            CTkToast.toast('Texture selection cancelled')
+            return
+
+        self.__texture_path = received_path
 
     @angle.setter
     def angle(self, new_angle: NUMBER) -> None:
@@ -230,39 +256,35 @@ class Shape(ABC):
         Args:
             offscreen (bool): If the shape is to be rendered off screen
         """
-        # Clears out the vertices first as it will be replenished by the draw method again
-        # Not doing so will cause the vertices size to increase slowing the app
-        self.vertices = []
-
-        if self.selected:
-
-            if self.rotate_shape:
-                """
-                Saves matrix, rotates shape, draws it and pops back the matrix.
-                """
-                self.rotation_x = Shape.mouse_x
-                self.rotation_y = Shape.mouse_y
-
-                GL.glPushMatrix()
-                GL.glTranslatef(self.x, self.y, self.z)
-                GL.glRotatef(self.rotation_x, 0, 1, 0)
-                GL.glRotatef(-self.rotation_y, 1, 0, 0)
-
-                self.draw(offscreen)
-
-                GL.glPopMatrix()
-                GL.glFlush()
-                return
+        self.vertices = []  # Clears out the vertices first to prevent size increase
 
         GL.glPushMatrix()
-        GL.glTranslatef(self.x, self.y, self.z)
+        GL.glTranslatef(self.x, self.y, self.z) # Applies movement from keys
 
-        GL.glRotatef(self.rotation_x, 0, 1, 0)
-        GL.glRotatef(-self.rotation_y, 1, 0, 0)
+        if self.selected and self.rotate_shape:
+            """
+            Rotates shape and saves the chosen rotation in self.rotate_x and y
+            """
+            self.rotation_x = Shape.mouse_x
+            self.rotation_y = Shape.mouse_y
+            GL.glRotatef(self.rotation_x, 0, 1, 0)
+            GL.glRotatef(-self.rotation_y, 1, 0, 0)
+
+        if not self.rotate_shape:
+            """
+            Applies the rotation from self.rotate_x and y after the user stops trying to rotate
+            """
+            GL.glRotatef(self.rotation_x, 0, 1, 0)
+            GL.glRotatef(-self.rotation_y, 1, 0, 0)
 
         GL.glLineWidth(1.2)
         self.draw(offscreen)
         GL.glLineWidth(1.0)
+
+        if not offscreen:
+            GL.glDisable(GL.GL_TEXTURE_GEN_S)
+            GL.glDisable(GL.GL_TEXTURE_GEN_T)
+            GL.glDisable(GL.GL_TEXTURE_2D)
 
         GL.glPopMatrix()
         GL.glFlush()
@@ -302,6 +324,38 @@ class Shape(ABC):
         GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
         GLU.gluSphere(quadric, radius, 10, 10)
         GL.glPopMatrix()
+
+    def __initialize_texture(self) -> None:
+        """
+        Loads the texture
+        """
+        image = Image.open(self.texture_path)
+        image_data = image.tobytes("raw", "RGB", 0)
+        width, height = image.size
+
+        self.texture_id = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture_id)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, width, height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, image_data)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+
+    def attach_texture(self) -> None:
+        """
+        Attaches the texture to the shape
+
+        Raises:
+            NotImplementedError: If the method has not been overriden in the subclass
+        """
+        GL.glEnable(GL.GL_TEXTURE_2D)
+        if not self.texture_loaded:
+            self.__initialize_texture()
+            self.texture_loaded = True
+
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture_id)
+
+        # Check if the method has been overridden in a subclass
+        if self.attach_texture.__func__ is Shape.attach_texture:
+            raise NotImplementedError("override this method and apply the texture for a specific shape")
 
     def delete(self) -> None:
         """
