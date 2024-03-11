@@ -5,7 +5,6 @@ from typing import override
 from custom_types import *
 from constants import *
 
-import OpenGL.GLU as GLU
 import OpenGL.GL as GL
 
 class Sphere(Shape):
@@ -19,27 +18,28 @@ class Sphere(Shape):
             slices (NUMBER): the slices of the sphere. Defaults to 25
             stacks (NUMBER): the stacks of the sphere. Defaults to 25
         """
-        super().__init__()
         self.__radius: NUMBER = radius
         self.__slices: int = slices
         self.__stacks: int = stacks
 
+        super().__init__()
+
     @property
-    def radius(self):
+    def radius(self) -> NUMBER:
         """
         radius (NUMBER): radius of the shape
         """
         return self.__radius
 
     @property
-    def slices(self):
+    def slices(self) -> int:
         """
         slices (int): slices of the shape
         """
         return self.__slices
 
     @property
-    def stacks(self):
+    def stacks(self) -> int:
         """
         stacks (int): stacks of the shape
         """
@@ -84,6 +84,37 @@ class Sphere(Shape):
                 self.radius -= Shape.default_increment
 
     @override
+    def initialize_vertices(self) -> VERTICES:
+        """
+        Computes the spheres vertices
+        """
+        vertices: VERTICES = []
+
+        for stack_index in range(self.stacks):
+            latitude_zero: float = pi * (-0.5 + stack_index / self.stacks)
+            stack_height_zero: float = self.radius * sin(latitude_zero)
+            stack_radius_zero: float = self.radius * cos(latitude_zero)
+
+            latitude_one: float = pi * (-0.5 + (stack_index + 1) / self.stacks)
+            stack_height_one: float = self.radius * sin(latitude_one)
+            stack_radius_one: float = self.radius * cos(latitude_one)
+
+            for slice_index in range(self.slices + 1):
+                longitude: float = 2 * pi * (slice_index / self.slices)
+                x: float = cos(longitude)
+                y: float = sin(longitude)
+
+                vertices.append(
+                    (x * stack_radius_zero, y * stack_radius_zero, stack_height_zero)
+                )
+
+                vertices.append(
+                    (x * stack_radius_one, y * stack_radius_one, stack_height_one)
+                )
+
+        return vertices
+
+    @override
     def draw(self, offscreen: bool = False) -> None:
         """
         Draws the sphere
@@ -93,13 +124,16 @@ class Sphere(Shape):
         """
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
-        quadric = GLU.gluNewQuadric()
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
-
         if self.use_texture and not offscreen:
             self.attach_texture()
 
-        GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)
+        GL.glBegin(GL.GL_TRIANGLE_STRIP)
+
+        for vertex in self.vertices:
+            GL.glNormal3f(*vertex)
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -131,23 +165,14 @@ class Sphere(Shape):
         """
         super().draw_grid()
 
-        GL.glPushMatrix()
+        GL.glBegin(GL.GL_LINES)
 
-        # Requires rotation as dots on vertices dont match grid vertex
-        GL.glRotatef(-3.5, 0, 0, 1)
-        GL.glColor3f(*Shape.grid_color)
-        quadric = GLU.gluNewQuadric()
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_LINE)
-        GLU.gluSphere(quadric, self.radius, self.slices, self.stacks)
-        GL.glPopMatrix()
+        GL.glColor3f(*self.grid_color)
+        for vertex in self.vertices:
+            GL.glVertex3f(*vertex)
 
-        # used for mapping out all dots in the grid
-        for stack in range(self.stacks + 1):
-            phi: NUMBER = pi * stack / self.stacks
-            for slice_ in range(self.slices + 1):
-                theta: NUMBER = 2 * pi * slice_ / self.slices
-                x: NUMBER = self.radius * sin(phi) * cos(theta)
-                y: NUMBER = self.radius * sin(phi) * sin(theta)
-                z: NUMBER = self.radius * cos(phi)
-                self.vertices.append((x, y, z))
-                self.draw_dot_at(x, y, z)
+        GL.glEnd()
+
+        # Drawing the dots
+        for vertex in self.vertices:
+            self.draw_dot_at(*vertex)
