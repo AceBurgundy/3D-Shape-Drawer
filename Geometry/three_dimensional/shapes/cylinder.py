@@ -1,57 +1,50 @@
 from geometry.three_dimensional.shape import Shape
-from typing import Any, override
 from math import pi, sin, cos
+from typing import override
 
 from custom_types import *
 from constants import *
 
-import OpenGL.GLU as GLU
 import OpenGL.GL as GL
 
 class Cylinder(Shape):
 
-    def __init__(self, radius: NUMBER = 1.0, height: NUMBER = 2.0, slices: int = 50) -> None:
+    def __init__(self, radius: float = 1.5, height: float = 2.5, slices: int = 30) -> None:
         """
-        Initializes the sphere
+        Initializes the cylinder
 
         Args:
-            radius (NUMBER): the radius of the sphere. Defaults to 1.0
-            height (NUMBER): the height of the sphere. Defaults to 2.0
-            slices (NUMBER): the slices (smoothness) of the sphere. Defaults to 3
+            radius (float): the radius of the cylinder. Defaults to 1.0
+            height (float): the height of the cylinder. Defaults to 2.0
+            slices (int): the slices of the cylinder. Defaults to 3
         """
-        super().__init__()
-        self.__radius: NUMBER = radius
-        self.__height: NUMBER = height
+        self.__radius: float = radius
+        self.__height: float = height
         self.__slices: int = slices
 
+        super().__init__()
+
     @property
-    def radius(self) -> NUMBER:
+    def radius(self) -> float:
         """
-        radius (NUMBER): the shapes radius
+        radius (float): the shapes radius
         """
         return self.__radius
 
-    @property
-    def height(self) -> NUMBER:
-        """
-        height (NUMBER): the shapes height
-        """
-        return self.__height
-
-    @property
-    def slices(self) -> int:
-        """
-        slices (int): the shapes slices
-        """
-        return self.__slices
-
     @radius.setter
-    def radius(self, new_radius: NUMBER) -> None:
+    def radius(self, new_radius: float) -> None:
         """
         Args:
-            new_radius (NUMBER): the new shapes radius
+            new_radius (float): the new shapes radius
         """
         self.__radius = new_radius
+
+    @property
+    def height(self) -> float:
+        """
+        height (float): the shapes height
+        """
+        return self.__height
 
     @height.setter
     def height(self, new_height: NUMBER) -> None:
@@ -60,6 +53,13 @@ class Cylinder(Shape):
             new_height (NUMBER): the new shapes height
         """
         self.__height = new_height
+
+    @property
+    def slices(self) -> int:
+        """
+        slices (int): the shapes slices
+        """
+        return self.__slices
 
     @slices.setter
     def slices(self, new_slices: int) -> None:
@@ -72,7 +72,7 @@ class Cylinder(Shape):
     @override
     def resize(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the cube by Shape.default_increment units.
+        Increases or decreases the size of the cylinder by Shape.default_increment units.
 
         Args:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
@@ -80,38 +80,70 @@ class Cylinder(Shape):
         if increment:
             self.radius += Shape.default_increment
             self.height += Shape.default_increment
-            self.slices += Shape.default_increment
         else:
             if self.radius > Shape.default_increment and self.height > Shape.default_increment:
                 self.radius -= Shape.default_increment
                 self.height -= Shape.default_increment
-                self.slices -= Shape.default_increment
+
+    @override
+    def initialize_vertices(self) -> VERTICES:
+        """
+        Returns the cylinder's initial vertices
+        """
+        vertices: VERTICES = []
+
+        for slice_index in range(self.__slices + 1):
+            angle: float = 2 * pi * (slice_index / self.__slices)
+            x: float = cos(angle)
+            y: float = sin(angle)
+
+            vertices.append(
+                (x * self.__radius, y * self.__radius, 0)
+            )
+
+            vertices.append(
+                (x * self.__radius, y * self.__radius, self.__height)
+            )
+
+        return vertices
+
+    @override
+    def attach_texture(self) -> None:
+        """
+        Attaches the texture to the cylinder
+        """
+        super().attach_texture()
+
+        GL.glEnable(GL.GL_TEXTURE_2D)
+        GL.glBegin(GL.GL_QUAD_STRIP)
+
+        for index, vertex in enumerate(self.vertices):
+            u: float = (cos(2 * pi * index / self.slices) + 1) / 2
+            v: float = (sin(2 * pi * index / self.slices) + 1) / 2
+            GL.glTexCoord2f(u, v)
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
 
     @override
     def draw(self, offscreen: bool = False) -> None:
         """
-        Draws the cylinder
+        Draws a cylinder
 
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
-
-        quadric = GLU.gluNewQuadric()
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
-
-        cylinder_arguments: Tuple[Any, NUMBER, NUMBER, NUMBER, NUMBER, NUMBER] = (
-            quadric,
-            self.radius, self.radius,
-            self.height,
-            self.slices, self.slices
-        )
 
         if self.use_texture and not offscreen:
             self.attach_texture()
 
-        GLU.gluCylinder(*cylinder_arguments)
+        GL.glBegin(GL.GL_QUAD_STRIP)
+
+        for vertex in self.vertices:
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -123,56 +155,15 @@ class Cylinder(Shape):
         """
         super().draw_grid()
 
-        angle_increment: float = 2 * pi / self.slices
         GL.glColor3f(*Shape.grid_color)
 
         GL.glBegin(GL.GL_LINES)
 
-        # Draw vertical lines along the circumference
-        for index in range(self.slices):
-
-            vertical_angle = index * angle_increment
-
-            # Calculate the position of the vertex on the circumference
-            vertical_x: float = self.radius * cos(vertical_angle)
-            vertical_y: float = self.radius * sin(vertical_angle)
-
-            # Draw lines connecting the vertex to the corresponding vertex on the opposite side of the cylinder
-            vertical_vertices: VERTICES = [
-                (vertical_x, vertical_y, 0),
-                (vertical_x, vertical_y, self.height)
-            ]
-
-            for vertex in vertical_vertices:
-                GL.glVertex3f(*vertex)
-                self.vertices.append(vertex)
-
-        # Draw horizontal lines connecting vertices at the same height
-        for index in range(self.slices):
-
-            horizontal_angle: float = index * angle_increment
-            horizontal_next_angle: float = (index + 1) * angle_increment
-
-            horizontal_x_start: float = self.radius * cos(horizontal_angle)
-            horizontal_y_start: float = self.radius * sin(horizontal_angle)
-
-            horizontal_x_end: float = self.radius * cos(horizontal_next_angle)
-            horizontal_y_end: float = self.radius * sin(horizontal_next_angle)
-
-            # Draw lines connecting vertices at the same height
-            horizontal_vertices: VERTICES = [
-                (horizontal_x_start, horizontal_y_start, 0),
-                (horizontal_x_end, horizontal_y_end, 0),
-                (horizontal_x_start, horizontal_y_start, self.height),
-                (horizontal_x_end, horizontal_y_end, self.height)
-            ]
-
-            for vertex in horizontal_vertices:
-                GL.glVertex3f(*vertex)
-                self.vertices.append(vertex)
+        for vertex_index in range(0, len(self.vertices), 2):
+            GL.glVertex3f(*self.vertices[vertex_index])
+            GL.glVertex3f(*self.vertices[vertex_index + 1])
 
         GL.glEnd()
 
-        if len(self.vertices) > 0:
-            for vertex in self.vertices:
-                self.draw_dot_at(*vertex)
+        for vertex in self.vertices:
+            self.draw_dot_at(*vertex)

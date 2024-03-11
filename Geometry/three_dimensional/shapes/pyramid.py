@@ -15,9 +15,11 @@ class Pyramid(Shape):
             base_length (NUMBER): the length of the base of the pyramid. Defaults to 1.0
             height (NUMBER): the height of the pyramid. Defaults to 2.0
         """
-        super().__init__()
         self.__base_length: NUMBER = base_length
         self.__height: NUMBER = height
+        self.__corners: VERTICES = []
+
+        super().__init__()
 
     @property
     def base_length(self) -> NUMBER:
@@ -64,12 +66,9 @@ class Pyramid(Shape):
                 self.base_length -= Shape.default_increment
                 self.height -= Shape.default_increment
 
-    def draw(self, offscreen: bool = False) -> None:
+    def initialize_vertices(self) -> VERTICES:
         """
-        Draws a pyramid
-
-        Args:
-            offscreen (bool): If the shape will be rendered off screen
+        Returns the pyramid's initial vertices
         """
         top_point: VERTEX = (0.0, 0.0, self.height)  # Swap y and z coordinates
         front_left: VERTEX = (-self.base_length / 2, -self.base_length / 2, 0.0)
@@ -77,15 +76,45 @@ class Pyramid(Shape):
         back_right: VERTEX = (self.base_length / 2, self.base_length / 2, 0.0)
         back_left: VERTEX = (-self.base_length / 2, self.base_length / 2, 0.0)
 
-        corners: VERTICES = [front_left, front_right, back_right, back_left]
+        self.__corners: VERTICES = [front_left, front_right, back_right, back_left]
 
-        self.vertices: VERTICES = [
+        return [
             top_point, front_left, front_right,
             top_point, front_right, back_right,
             top_point, back_right, back_left,
             top_point, back_left, front_left
         ]
 
+    @override
+    def attach_texture(self) -> None:
+        """
+        Attaches the texture to the pyramid
+        """
+        super().attach_texture()
+
+        GL.glEnable(GL.GL_TEXTURE_2D)
+        GL.glBegin(GL.GL_TRIANGLES)
+
+        # Texture coordinates for the top point of the pyramid
+        GL.glTexCoord2f(0.5, 0.5)
+        GL.glVertex3f(0, 0, self.height)
+
+        # Texture coordinates for the base vertices
+        for vertex in self.vertices[1:]:
+            u: float = (vertex[0] + self.base_length / 2) / self.base_length
+            v: float = (vertex[1] + self.base_length / 2) / self.base_length
+            GL.glTexCoord2f(u, v)
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
+
+    def draw(self, offscreen: bool = False) -> None:
+        """
+        Draws a pyramid
+
+        Args:
+            offscreen (bool): If the shape will be rendered off screen
+        """
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
 
         if self.use_texture and not offscreen:
@@ -99,10 +128,10 @@ class Pyramid(Shape):
         GL.glEnd()
 
         if not offscreen and self.selected:
-            self.draw_grid(corners)
+            self.draw_grid()
 
     @override
-    def draw_grid(self, corners: List[VERTEX]) -> None:
+    def draw_grid(self) -> None:
         """
         Draws a grid that is wrapping up the pyramid
         """
@@ -112,7 +141,7 @@ class Pyramid(Shape):
 
         GL.glBegin(GL.GL_LINE_LOOP)
 
-        for corner in corners:
+        for corner in self.__corners:
             GL.glVertex3f(*corner)
             GL.glVertex3f(*self.vertices[0])
 
@@ -120,8 +149,8 @@ class Pyramid(Shape):
 
         GL.glBegin(GL.GL_LINES)
 
-        for index in range(len(corners)):
-            GL.glVertex3f(*corners[index])
-            GL.glVertex3f(*corners[(index + 1) % len(corners)])
+        for index in range(len(self.__corners)):
+            GL.glVertex3f(*self.__corners[index])
+            GL.glVertex3f(*self.__corners[(index + 1) % len(self.__corners)])
 
         GL.glEnd()

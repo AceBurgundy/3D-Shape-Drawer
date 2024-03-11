@@ -1,11 +1,10 @@
 from geometry.three_dimensional.shape import Shape
-from typing import Any, override
 from math import pi, sin, cos
+from typing import override
 
 from custom_types import *
 from constants import *
 
-import OpenGL.GLU as GLU
 import OpenGL.GL as GL
 
 class Cone(Shape):
@@ -19,10 +18,11 @@ class Cone(Shape):
             height (float): the height of the cone. Defaults to 2.0
             slices (int): the slices of the cone. Defaults to 3
         """
-        super().__init__()
         self.__radius: float = radius
         self.__height: float = height
         self.__slices: int = slices
+
+        super().__init__()
 
     @property
     def radius(self) -> float:
@@ -86,6 +86,51 @@ class Cone(Shape):
                 self.height -= Shape.default_increment
 
     @override
+    def initialize_vertices(self) -> VERTICES:
+        """
+        Returns the cone's initial vertices
+        """
+        vertices: VERTICES = []
+
+        for slice_index in range(self.__slices + 1):
+            angle: float = 2 * pi * (slice_index / self.__slices)
+            x: float = cos(angle)
+            y: float = sin(angle)
+
+            vertices.append(
+                (x * self.__radius, y * self.__radius, 0)
+            )
+
+            vertices.append(
+                (0, 0, self.__height)
+            )
+
+        return vertices
+
+    @override
+    def attach_texture(self) -> None:
+        """
+        Attaches the texture to the cone
+        """
+        super().attach_texture()
+
+        GL.glEnable(GL.GL_TEXTURE_2D)
+        GL.glBegin(GL.GL_TRIANGLE_FAN)
+
+        # Texture coordinates for the apex vertex
+        GL.glTexCoord2f(0.5, 0.5)
+        GL.glVertex3f(0, 0, self.height)
+
+        # Texture coordinates for the base vertices
+        for index, vertex in enumerate(self.vertices[::2]):
+            u = (cos(2 * pi * index / self.slices) + 1) / 2
+            v = (sin(2 * pi * index / self.slices) + 1) / 2
+            GL.glTexCoord2f(u, v)
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
+
+    @override
     def draw(self, offscreen: bool = False) -> None:
         """
         Draws a cone
@@ -93,20 +138,18 @@ class Cone(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
-
-        quadric = GLU.gluNewQuadric()
-        GLU.gluQuadricDrawStyle(quadric, GLU.GLU_FILL)
-        cone_arguments: Tuple[Any, float, Literal[0], float, int, int] = (
-            quadric, self.radius, 0, self.height, self.slices, self.slices
-        )
-
 
         if self.use_texture and not offscreen:
             self.attach_texture()
 
-        GLU.gluCylinder(*cone_arguments)
+        GL.glBegin(GL.GL_TRIANGLE_FAN)
+        GL.glVertex3f(0, 0, self.height)  # Apex vertex
+
+        for vertex in self.vertices[::2]:  # Base vertices
+            GL.glVertex3f(*vertex)
+
+        GL.glEnd()
 
         if not offscreen and self.selected:
             self.draw_grid()
@@ -118,33 +161,15 @@ class Cone(Shape):
         """
         super().draw_grid()
 
-        if len(self.vertices) < 0:
-            return
-
         GL.glColor3f(*Shape.grid_color)
-
-        # Calculate the angle between each vertex along the circumference
-        angle_increment: float = 2 * pi / self.slices
-
         GL.glBegin(GL.GL_LINES)
 
-        # Draw vertical lines along the circumference
-        for index in range(self.slices):
-            angle: float = index * angle_increment
-
-            # Calculate the position of the vertex on the circumference
-            x: float = self.radius * cos(angle)
-            y: float = self.radius * sin(angle)
-
-            vertices: VERTICES = [ (x, y, 0), (0, 0, self.height) ]
-
-            for vertex in vertices:
-                GL.glVertex3f(*vertex)
-                self.vertices.append(vertex)
+        for vertex_index in range(0, len(self.vertices), 2):
+            GL.glVertex3f(*self.vertices[vertex_index])
+            GL.glVertex3f(*self.vertices[vertex_index + 1])
 
         GL.glEnd()
 
-        if len(self.vertices) > 0:
-            for vertex in self.vertices:
-                self.draw_dot_at(*vertex)
+        for vertex in self.vertices:
+            self.draw_dot_at(*vertex)
 
