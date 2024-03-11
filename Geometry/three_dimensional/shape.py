@@ -19,17 +19,18 @@ class Shape(ABC):
     """
     Abstract base class representing a 3D geometric shape.
 
-    Attributes:
+    Static fields:
         selected_shape (Type['Shape'] | None): The currently selected shape, if any.
         buffer_colors (Dict[int, RGB]): A dictionary mapping shape IDs to RGB colors.
+
         default_increment (int): The default increment value.
         grid_color (RGB): The color of the grid.
-        previous_mouse_x (int): The previous X-coordinate of the mouse.
-        previous_mouse_y (int): The previous Y-coordinate of the mouse.
-        mouse_x (int): The current X-coordinate of the mouse.
-        mouse_y (int): The current Y-coordinate of the mouse.
+
         shape_ids (List[int]): A list of shape IDs.
         current_buffer_colors (RGBS): The current buffer colors.
+
+        mouse_x (int): The current X-coordinate of the mouse.
+        mouse_y (int): The current Y-coordinate of the mouse.
     """
 
     selected_shape: Optional['Shape'] = None
@@ -48,16 +49,24 @@ class Shape(ABC):
         """
         Initializes a Shape object.
 
-        Sets the initial values for various properties including ID, colors, rotation, and position.
-
         Attributes:
+            __id (int): The unique identifier of the shape.
+            vertices (VERTICES): List of vertices for creating the shape.
+
+            __background_color (RGB): The background color of the shape.
+            __texture_path (str): The path to the texture.
+
             rotate_shape (bool): Flag indicating whether the shape should rotate.
             show_grid (bool): Flag indicating whether the grid should be displayed.
             selected (bool): Flag indicating whether the shape is selected.
-            vertices (VERTICES): List of vertices for creating dots.
-            __id (int): The unique identifier of the shape.
-            __background_color (RGB): The background color of the shape.
-            __texture_path (str): The path to the texture.
+
+            __use_texture (bool): Use the texture on the shape.
+            texture_loaded (bool): If the texture had already been loaded.
+            texture_id (int): The id for the loaded texture
+
+            __rotation x (NUMBER): The shapes x rotation on its axis.
+            __rotation y (NUMBER): The shapes y rotation on its axis.
+
             __angle (NUMBER): The angle of rotation.
             __x (int): The X-coordinate.
             __y (int): The Y-coordinate.
@@ -66,23 +75,24 @@ class Shape(ABC):
         self.__id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
         Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
 
-        self.__background_color: RGB = GREY
+        self.vertices: VERTICES = []
+
+        if len(self.vertices) <= 0:
+            self.vertices = self.initialize_vertices()
+
+        self.__background_color: RGB = WHITE
         self.__texture_path: str = "textures\\kahoy.jpg"
 
-        self.show_texture: bool = False
         self.rotate_shape: bool = False
         self.show_grid: bool = False
         self.selected: bool = False
-
-        self.__rotation_x: int = 0
-        self.__rotation_y: int = 0
 
         self.__use_texture: bool = True
         self.texture_loaded = False
         self.texture_id = None
 
-        # list of vertex (for creating dots)
-        self.vertices: VERTICES = []
+        self.__rotation_x: int = 0
+        self.__rotation_y: int = 0
 
         self.__angle: NUMBER = 0
         self.__x: int = 0
@@ -249,6 +259,30 @@ class Shape(ABC):
         """
         self.__z = new_z
 
+    @abstractmethod
+    def initialize_vertices(self):
+        """
+        Initializes the shapes vertices
+        """
+        raise NotImplementedError("Must implement this shapes' initial vertices")
+
+    @abstractmethod
+    def draw(self, offscreen: bool = False) -> None:
+        """
+        Abstract method to draw the shape.
+
+        Args:
+            offscreen (bool): If the shape is to be rendered off screen
+        """
+        raise NotImplementedError("You might've not implemented this shape")
+
+    @abstractmethod
+    def resize(self, increment: bool = True) -> None:
+        """
+        Increases or decreases the size of the shape by several pixels.
+        """
+        raise NotImplementedError("You might've not implemented this shapes resize method")
+
     def draw_to_canvas(self, offscreen: bool = False) -> None:
         """
         Renders the shape to the canvas
@@ -256,8 +290,6 @@ class Shape(ABC):
         Args:
             offscreen (bool): If the shape is to be rendered off screen
         """
-        self.vertices = []  # Clears out the vertices first to prevent size increase
-
         GL.glPushMatrix()
         GL.glTranslatef(self.x, self.y, self.z) # Applies movement from keys
 
@@ -277,7 +309,7 @@ class Shape(ABC):
             GL.glRotatef(self.rotation_x, 0, 1, 0)
             GL.glRotatef(-self.rotation_y, 1, 0, 0)
 
-        GL.glLineWidth(1.2)
+        GL.glLineWidth(1.5)
         self.draw(offscreen)
         GL.glLineWidth(1.0)
 
@@ -289,17 +321,6 @@ class Shape(ABC):
         GL.glPopMatrix()
         GL.glFlush()
 
-    @abstractmethod
-    def draw(self, offscreen: bool = False) -> None:
-        """
-        Abstract method to draw the shape.
-
-        Args:
-            offscreen (bool): If the shape is to be rendered off screen
-        """
-        raise NotImplementedError("You might've not implemented this shape")
-
-    @abstractmethod
     def draw_grid(self) -> None:
         """
         Draws a grid that is wrapping up the shape
@@ -335,6 +356,7 @@ class Shape(ABC):
 
         self.texture_id = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture_id)
+
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, width, height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, image_data)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
@@ -374,13 +396,6 @@ class Shape(ABC):
 
         Shape.selected_shape = None
         return
-
-    @abstractmethod
-    def resize(self, increment: bool=True) -> None:
-        """
-        Increases or decreases the size of the shape by several pixels.
-        """
-        raise NotImplementedError()
 
     @classmethod
     def export_to_file(cls) -> bool:
