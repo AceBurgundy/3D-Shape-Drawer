@@ -1,9 +1,9 @@
-from geometry.three_dimensional.shapes.cube import Cube
 from geometry.three_dimensional.shapes.cylinder import Cylinder
 from geometry.three_dimensional.shapes.pyramid import Pyramid
 from geometry.three_dimensional.shapes.cuboid import Cuboid
 from geometry.three_dimensional.shapes.sphere import Sphere
 from geometry.three_dimensional.shapes.cone import Cone
+from geometry.three_dimensional.shapes.cube import Cube
 
 from geometry.three_dimensional.shape import Shape
 
@@ -13,7 +13,10 @@ def shape_class_references() -> Dict[str, Type[Shape]]:
     """
     Returns a dictionary with shape names and their class instance
     """
-    return { shape_class_reference.__name__: shape_class_reference for shape_class_reference in Shape.__subclasses__() }
+    references: Dict[str, Type[Shape]] = { shape_class_reference.__name__: shape_class_reference for shape_class_reference in Shape.__subclasses__() }
+    references[Cuboid.__name__] = Cuboid
+
+    return references
 
 def shape_names() -> List[str]:
     """
