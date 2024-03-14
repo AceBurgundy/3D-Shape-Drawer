@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple
+from properties.manager import Properties
 
 
 if TYPE_CHECKING:
@@ -57,7 +58,9 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
 
             if shape.selected:
                 Shape.selected_shape = shape
+                Properties.generate_shape_properties(Shape.selected_shape.__class__)
+                Shape.selected_shape.property_tab_value_updater = Properties.update_group_value
 
         if selected_shape_id is None:
             Shape.selected_shape = None
-            return
+            Properties.hide()
