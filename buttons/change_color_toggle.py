@@ -1,21 +1,12 @@
-# for type checking purposes.
-
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from Navigation import Navigation
-
-from customtkinter import CTkButton
+from customtkinter import CTkButton, CTkFrame
 from CTkColorPicker import AskColor
 from geometry.rgb import hex_to_rgb
 from CTkToast import CTkToast
-
-from geometry.three_dimensional.shape import Shape
+from typing import Optional
 
 class ColorPickerToggle(CTkButton):
-    def __init__(self, parent: Navigation, *args, **kwargs):
+
+    def __init__(self, parent: CTkFrame, initial_color: Optional[str], *args, **kwargs) -> None:
         """
         Initializes the Button object.
 
@@ -26,12 +17,14 @@ class ColorPickerToggle(CTkButton):
             **kwargs: Additional keyword arguments to pass to the parent class initializer.
         """
         super().__init__(parent, *args, **kwargs)
-        self.configure(corner_radius=5, fg_color="orange", text='', width=25, height=20)
+        self.configure(fg_color=initial_color if initial_color else "white", text='')
 
     def _clicked(self, event) -> None:
         """
         The click event for the button
         """
+        from geometry.three_dimensional.shape import Shape
+
         if Shape.selected_shape is None:
             CTkToast.toast("To change color, select a shape first")
             return
