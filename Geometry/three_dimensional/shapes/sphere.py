@@ -31,20 +31,6 @@ class Sphere(Shape):
         """
         return self.__radius
 
-    @property
-    def slices(self) -> int:
-        """
-        slices (int): slices of the shape
-        """
-        return self.__slices
-
-    @property
-    def stacks(self) -> int:
-        """
-        stacks (int): stacks of the shape
-        """
-        return self.__stacks
-
     @radius.setter
     def radius(self, new_radius: NUMBER) -> None:
         """
@@ -53,6 +39,13 @@ class Sphere(Shape):
         """
         self.__radius = new_radius
 
+    @property
+    def slices(self) -> int:
+        """
+        slices (int): slices of the shape
+        """
+        return self.__slices
+
     @slices.setter
     def slices(self, new_slices: int) -> None:
         """
@@ -60,6 +53,13 @@ class Sphere(Shape):
             new_slices (int): the new slices of the shape
         """
         self.__slices = new_slices
+
+    @property
+    def stacks(self) -> int:
+        """
+        stacks (int): stacks of the shape
+        """
+        return self.__stacks
 
     @stacks.setter
     def stacks(self, new_stacks: int) -> None:
@@ -78,10 +78,14 @@ class Sphere(Shape):
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.radius += Shape.default_increment
+            for vertex in self.vertices:
+                for coordinate in vertex:
+                    coordinate += Shape.default_increment
         else:
             if self.radius > Shape.default_increment:
                 self.radius -= Shape.default_increment
+
+        self.vertices = self.initialize_vertices()
 
     @override
     def initialize_vertices(self) -> VERTICES:
@@ -122,7 +126,7 @@ class Sphere(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
 
         if self.use_texture and not offscreen:
             self.attach_texture()
