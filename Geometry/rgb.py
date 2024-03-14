@@ -24,6 +24,36 @@ def random_rgb(exemption_list: Optional[ValuesView[RGB]] = None) -> RGB:
 
     return new_color
 
+def rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
+    """
+    Convert a tuple of three floats representing RGB values to a hexadecimal color string.
+
+    Args:
+        rgb (Tuple[float, float, float]): A tuple of three floats, each between 0.0 and 1.0,
+            representing the red, green, and blue components of a color.
+
+    Raises:
+        TypeError: If the input is not a tuple of three floats between 0.0 and 1.0.
+
+    Returns:
+        str: The hexadecimal color string.
+
+    Examples:
+        >>> rgb_to_hex((0.5, 0.5, 0.5))
+        '#7f7f7f'
+    """
+    if not isinstance(rgb, tuple):
+        raise TypeError('Argument must be of type Tuple[float, float, float]')
+
+    if len(rgb) < 3:
+        raise TypeError('Argument must contain float values for r, g, b')
+
+    if not all(isinstance(color, float) and 0.0 <= color <= 1.0 for color in rgb):
+        raise TypeError('Elements of the tuple argument must strictly be instances of float between 0.0 - 1.0')
+
+    int_values = tuple(int(color * 255) for color in rgb)
+    return '#{0:02x}{1:02x}{2:02x}'.format(*int_values)
+
 def hex_to_rgb(hex_color: str) -> RGB:
     """
     Converts hex into rgb where each element is a float 1.00
