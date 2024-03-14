@@ -37,7 +37,8 @@ class Cylinder(Shape):
         Args:
             new_radius (float): the new shapes radius
         """
-        self.__radius = new_radius
+        self.__radius = int(new_radius)
+        self.vertices = self.initialize_vertices()
 
     @property
     def height(self) -> float:
@@ -52,7 +53,8 @@ class Cylinder(Shape):
         Args:
             new_height (NUMBER): the new shapes height
         """
-        self.__height = new_height
+        self.__height = int(new_height)
+        self.vertices = self.initialize_vertices()
 
     @property
     def slices(self) -> int:
@@ -67,7 +69,8 @@ class Cylinder(Shape):
         Args:
             new_slices (int): the new shapes slices
         """
-        self.__slices = new_slices
+        self.__slices = int(new_slices)
+        self.vertices = self.initialize_vertices()
 
     @override
     def resize(self, increment: bool = True) -> None:
@@ -84,6 +87,8 @@ class Cylinder(Shape):
             if self.radius > Shape.default_increment and self.height > Shape.default_increment:
                 self.radius -= Shape.default_increment
                 self.height -= Shape.default_increment
+
+        self.vertices = self.initialize_vertices()
 
     @override
     def initialize_vertices(self) -> VERTICES:
@@ -133,7 +138,7 @@ class Cylinder(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
 
         if self.use_texture and not offscreen:
             self.attach_texture()
