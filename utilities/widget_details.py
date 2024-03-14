@@ -1,7 +1,7 @@
 from customtkinter import CTk
-from typing import Type, Dict
+from typing import Dict
 
-def widget_info(widget: Type[CTk]) -> Dict[str, int]:
+def widget_info(widget: CTk) -> Dict[str, int]:
     """
     Returns the details of a CTk Widget
     """
