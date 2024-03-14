@@ -69,8 +69,8 @@ class PropertyGroup(CTkFrame):
         setter_type: Type[CTkButton]|Type[CTkEntry]|Type[CTkSwitch]|Type[ColorPickerToggle] = type(self.value_setter)
 
         if setter_type == CTkButton:
-
             if 'path' in self.title.cget('text').lower():
+
                 file_name: str = path.basename(new_value) if new_value != '' else 'Select Path'
                 current_setter_value: str = self.value_setter.cget("text")
 
