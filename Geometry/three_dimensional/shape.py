@@ -211,6 +211,8 @@ class Shape(ABC):
             The path to the new texture (Used by Properties to update its value)
         """
         self.__texture_path = new_path
+
+        self.__initialize_texture()
         self.update_value_from_property_manager(Shape.texture_path, new_path)
 
     @x.setter
