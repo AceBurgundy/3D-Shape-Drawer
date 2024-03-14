@@ -16,6 +16,7 @@ from CTkToast import CTkToast
 from constants import *
 
 class Navigation(CTkFrame):
+
     def __init__(self, parent: App, **kwargs):
         """
         Initializes the Navigation object.
