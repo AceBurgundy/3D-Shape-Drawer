@@ -59,27 +59,6 @@ class Cube(Shape):
         """
         return self.__depth
 
-    @property
-    def half_width(self) -> float:
-        """
-        half_width (NUMBER): the shapes half width
-        """
-        return self.width / 2
-
-    @property
-    def half_height(self) -> float:
-        """
-        half_height (NUMBER): the shapes half height
-        """
-        return self.height / 2
-
-    @property
-    def half_depth(self) -> float:
-        """
-        half_depth (NUMBER): the shapes half depth
-        """
-        return self.depth / 2
-
     @width.setter
     def width(self, new_width: NUMBER) -> None:
         """
@@ -104,6 +83,24 @@ class Cube(Shape):
         """
         self.__depth = new_depth
 
+    def half_width(self) -> float:
+        """
+        half_width (NUMBER): the shapes half width
+        """
+        return self.width / 2
+
+    def half_height(self) -> float:
+        """
+        half_height (NUMBER): the shapes half height
+        """
+        return self.height / 2
+
+    def half_depth(self) -> float:
+        """
+        half_depth (NUMBER): the shapes half depth
+        """
+        return self.depth / 2
+
     @override
     def resize(self, increment: bool = True) -> None:
         """
@@ -122,20 +119,22 @@ class Cube(Shape):
                 self.height -= Shape.default_increment
                 self.depth -= Shape.default_increment
 
+        self.vertices = self.initialize_vertices()
+
     @override
     def initialize_vertices(self) -> VERTICES:
         """
         Returns the cubes initial vertices
         """
         return [
-            (-self.half_width, -self.half_height, -self.half_depth),  # Vertex 0
-            (self.half_width, -self.half_height, -self.half_depth),   # Vertex 1
-            (self.half_width, self.half_height, -self.half_depth),    # Vertex 2
-            (-self.half_width, self.half_height, -self.half_depth),   # Vertex 3
-            (-self.half_width, -self.half_height, self.half_depth),   # Vertex 4
-            (self.half_width, -self.half_height, self.half_depth),    # Vertex 5
-            (self.half_width, self.half_height, self.half_depth),     # Vertex 6
-            (-self.half_width, self.half_height, self.half_depth)     # Vertex 7
+            (-self.half_width(), -self.half_height(), -self.half_depth()),  # Vertex 0
+            (self.half_width(), -self.half_height(), -self.half_depth()),   # Vertex 1
+            (self.half_width(), self.half_height(), -self.half_depth()),    # Vertex 2
+            (-self.half_width(), self.half_height(), -self.half_depth()),   # Vertex 3
+            (-self.half_width(), -self.half_height(), self.half_depth()),   # Vertex 4
+            (self.half_width(), -self.half_height(), self.half_depth()),    # Vertex 5
+            (self.half_width(), self.half_height(), self.half_depth()),     # Vertex 6
+            (-self.half_width(), self.half_height(), self.half_depth())     # Vertex 7
         ]
 
     @override
@@ -174,7 +173,7 @@ class Cube(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
 
         if self.use_texture and not offscreen:
             self.attach_texture()
