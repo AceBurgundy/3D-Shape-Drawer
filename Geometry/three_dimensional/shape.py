@@ -1,16 +1,25 @@
-from geometry.rgb import process_rgb, random_rgb
-from CTkToast import CTkToast
-from custom_types import *
-from constants import *
+# for type checking purposes.
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Optional
+
+if TYPE_CHECKING:
+    from properties.manager import Properties
 
 from typing import Any, Dict, KeysView, ValuesView
 from abc import ABC, abstractmethod
 from pathlib import Path
 from PIL import Image
 from os import path
-from save import *
 import inspect
 import pickle
+
+from geometry.rgb import random_rgb
+from CTkToast import CTkToast
+from custom_types import *
+from constants import *
+from save import *
 
 import OpenGL.GLU as GLU
 import OpenGL.GL as GL
@@ -34,8 +43,8 @@ class Shape(ABC):
     """
 
     selected_shape: Optional['Shape'] = None
-    buffer_colors: Dict[int, RGB] = {}
 
+    buffer_colors: Dict[int, RGB] = {}
     default_increment: int = 1
     grid_color: RGB = BLACK
 
@@ -50,7 +59,7 @@ class Shape(ABC):
         Initializes a Shape object.
 
         Attributes:
-            __id (int): The unique identifier of the shape.
+            id (int): The unique identifier of the shape.
             vertices (VERTICES): List of vertices for creating the shape.
 
             __background_color (RGB): The background color of the shape.
@@ -64,16 +73,16 @@ class Shape(ABC):
             texture_loaded (bool): If the texture had already been loaded.
             texture_id (int): The id for the loaded texture
 
-            __rotation x (NUMBER): The shapes x rotation on its axis.
-            __rotation y (NUMBER): The shapes y rotation on its axis.
+            __x_rotation (NUMBER): The shapes x rotation on its axis.
+            __y_rotation (NUMBER): The shapes y rotation on its axis.
 
-            __angle (NUMBER): The angle of rotation.
             __x (int): The X-coordinate.
             __y (int): The Y-coordinate.
             __z (int): The Z-coordinate.
         """
-        self.__id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
-        Shape.buffer_colors[self.__id] = random_rgb(exemption_list=Shape.current_buffer_colors)
+        self.id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
+        Shape.buffer_colors[self.id] = random_rgb(exemption_list=Shape.current_buffer_colors)
+        self.property_tab_value_updater: Optional[Callable] = None
 
         self.vertices: VERTICES = []
 
@@ -81,35 +90,27 @@ class Shape(ABC):
             self.vertices = self.initialize_vertices()
 
         self.__background_color: RGB = WHITE
-        self.__texture_path: str = "textures\\kahoy.jpg"
+        self.__texture_path: str = ""
 
         self.rotate_shape: bool = False
         self.show_grid: bool = False
         self.selected: bool = False
 
-        self.__use_texture: bool = True
+        self.__use_texture: bool = False
         self.texture_loaded = False
         self.texture_id = None
 
-        self.__rotation_x: int = 0
-        self.__rotation_y: int = 0
+        self.__x_rotation: int = 0
+        self.__y_rotation: int = 0
 
-        self.__angle: NUMBER = 0
         self.__x: int = 0
         self.__y: int = 0
         self.__z: int = 0
 
     @property
-    def assigned_buffer_color(self) -> RGB:
-        """
-        The unique background color used by the shape for color picking
-        """
-        return Shape.buffer_colors[self.id]
-
-    @property
     def background_color(self) -> RGB:
         """
-        background_color (RGB): The background color of the shape.
+        background_color (RGB): the shapes background color
         """
         return self.__background_color
 
@@ -121,18 +122,18 @@ class Shape(ABC):
         return self.__use_texture
 
     @property
-    def rotation_x(self) -> int:
+    def x_rotation(self) -> int:
         """
-        rotation_x (int): the x rotation of the shape.
+        x_rotation (int): the x rotation of the shape.
         """
-        return self.__rotation_x
+        return self.__x_rotation
 
     @property
-    def rotation_y(self) -> int:
+    def y_rotation(self) -> int:
         """
-        rotation_y (int): the y rotation of the shape.
+        y_rotation (int): the y rotation of the shape.
         """
-        return self.__rotation_y
+        return self.__y_rotation
 
     @property
     def texture_path(self) -> str:
@@ -140,13 +141,6 @@ class Shape(ABC):
         texture_path (str): The path to the texture.
         """
         return self.__texture_path
-
-    @property
-    def angle(self) -> NUMBER:
-        """
-        angle (NUMBER): The angle of rotation.
-        """
-        return self.__angle
 
     @property
     def x(self) -> int:
@@ -169,71 +163,55 @@ class Shape(ABC):
         """
         return self.__z
 
-    @property
-    def id(self) -> int:
-        """
-        id (int): The unique identifier of the shape.
-        """
-        return self.__id
-
     @background_color.setter
-    def background_color(self, rgb_argument: RGB):
+    def background_color(self, new_background_color: RGB) -> None:
         """
         Args:
-            rgb_argument (RGB): The RGB color value.
-
-        Raises:
-            TypeError: If the rgb_argument is not an Iterable.
-            TypeError: If the length of the rgb_argument is not equal to 3.
-            TypeError: If one of the elements is an integer not within 0-255.
-            TypeError: If one of the elements is a float not within 0-1.0.
+            new_background_color (RGB): The shapes new background color
         """
-        self.__background_color = process_rgb(rgb_argument)
+        self.__background_color = new_background_color
 
     @use_texture.setter
-    def use_texture(self, new_value: bool) -> None:
+    def use_texture(self, new_value: bool) -> bool:
         """
         Args:
             new_value (bool): The new value for use_texture.
         """
+        if self.__texture_path == '' and self.use_texture == False and new_value == True:
+            CTkToast.toast('Choose a texture first')
+            return False
+
         self.__use_texture = new_value
+        return True
 
-    @rotation_x.setter
-    def rotation_x(self, new_rotation: int) -> None:
+    @x_rotation.setter
+    def x_rotation(self, new_rotation: int) -> None:
         """
         Args:
             new_rotation (int): The new rotation value.
         """
-        self.__rotation_x = new_rotation
+        self.__x_rotation = new_rotation
+        self.update_value_from_property_manager(Shape.x_rotation, new_rotation)
 
-    @rotation_y.setter
-    def rotation_y(self, new_rotation: int) -> None:
+    @y_rotation.setter
+    def y_rotation(self, new_rotation: int) -> None:
         """
         Args:
             new_rotation (int): The new rotation value.
         """
-        self.__rotation_y = new_rotation
+        self.__y_rotation = new_rotation
+        self.update_value_from_property_manager(Shape.y_rotation, new_rotation)
 
     @texture_path.setter
-    def texture_path(self):
+    def texture_path(self, new_path: str) -> Optional[str]:
         """
         Sets the path to the texture
-        """
-        received_path: Optional[str] = open_file_dialog()
 
-        if received_path is None:
-            CTkToast.toast('Texture selection cancelled')
-            return
-
-        self.__texture_path = received_path
-
-    @angle.setter
-    def angle(self, new_angle: NUMBER) -> None:
+        Returns:
+            The path to the new texture (Used by Properties to update its value)
         """
-        Args:
-            new_angle (NUMBER): The new angle value.
-        """
-        self.__angle = new_angle
+        self.__texture_path = new_path
+        self.update_value_from_property_manager(Shape.texture_path, new_path)
 
     @x.setter
     def x(self, new_x: int) -> None:
@@ -242,6 +220,7 @@ class Shape(ABC):
             new_x (int): The new X-coordinate value.
         """
         self.__x = new_x
+        self.update_value_from_property_manager(Shape.x, new_x)
 
     @y.setter
     def y(self, new_y: int) -> None:
@@ -250,6 +229,7 @@ class Shape(ABC):
             new_y (int): The new Y-coordinate value.
         """
         self.__y = new_y
+        self.update_value_from_property_manager(Shape.y, new_y)
 
     @z.setter
     def z(self, new_z: int) -> None:
@@ -258,6 +238,13 @@ class Shape(ABC):
             new_z (int): The new Z-coordinate value.
         """
         self.__z = new_z
+        self.update_value_from_property_manager(Shape.z, new_z)
+
+    def assigned_buffer_color(self) -> RGB:
+        """
+        The unique background color used by the shape for color picking
+        """
+        return Shape.buffer_colors[self.id]
 
     @abstractmethod
     def initialize_vertices(self):
@@ -297,17 +284,17 @@ class Shape(ABC):
             """
             Rotates shape and saves the chosen rotation in self.rotate_x and y
             """
-            self.rotation_x = Shape.mouse_x
-            self.rotation_y = Shape.mouse_y
-            GL.glRotatef(self.rotation_x, 0, 1, 0)
-            GL.glRotatef(-self.rotation_y, 1, 0, 0)
+            self.x_rotation = Shape.mouse_x
+            self.y_rotation = Shape.mouse_y
+            GL.glRotatef(self.x_rotation, 0, 1, 0)
+            GL.glRotatef(-self.y_rotation, 1, 0, 0)
 
         if not self.rotate_shape:
             """
             Applies the rotation from self.rotate_x and y after the user stops trying to rotate
             """
-            GL.glRotatef(self.rotation_x, 0, 1, 0)
-            GL.glRotatef(-self.rotation_y, 1, 0, 0)
+            GL.glRotatef(self.x_rotation, 0, 1, 0)
+            GL.glRotatef(-self.y_rotation, 1, 0, 0)
 
         GL.glLineWidth(1.5)
         self.draw(offscreen)
@@ -395,7 +382,27 @@ class Shape(ABC):
                 break
 
         Shape.selected_shape = None
+
+        from properties.manager import Properties
+        Properties.hide()
+
         return
+
+    def update_value_from_property_manager(self, shape_property_setter_reference: property, new_value: Any) -> None:
+        """
+        Updates the value of a property manager setter from a specific setter method value.
+
+        Args:
+            shape_property_setter_reference (property): The reference to the property that called this method
+            new_value (Any): The new value you wish to set the property manager group value to.
+        """
+        if self.property_tab_value_updater is None:
+            return
+
+        if shape_property_setter_reference.fget is None:
+            return
+
+        self.property_tab_value_updater(shape_property_setter_reference.fget.__name__, new_value)
 
     @classmethod
     def export_to_file(cls) -> bool:
