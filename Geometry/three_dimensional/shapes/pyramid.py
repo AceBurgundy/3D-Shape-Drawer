@@ -66,6 +66,8 @@ class Pyramid(Shape):
                 self.base_length -= Shape.default_increment
                 self.height -= Shape.default_increment
 
+        self.vertices = self.initialize_vertices()
+
     def initialize_vertices(self) -> VERTICES:
         """
         Returns the pyramid's initial vertices
@@ -115,7 +117,7 @@ class Pyramid(Shape):
         Args:
             offscreen (bool): If the shape will be rendered off screen
         """
-        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color)
+        GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
 
         if self.use_texture and not offscreen:
             self.attach_texture()
