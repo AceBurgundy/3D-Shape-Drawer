@@ -100,6 +100,8 @@ class Properties(CTkFrame):
             group: PropertyGroup = PropertyGroup(master=Properties._instance, title=label, initial_value=field_value, property_setter=setter, property_getter=getter)
             group.grid(row=index, column=0, sticky="nsew", pady=BOTTOM_PADDING_ONLY if index != len(shape_data) - 1 else 0)
 
+            Properties.groups[field_name] = group
+
         Properties.show()
 
     @staticmethod
