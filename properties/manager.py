@@ -12,6 +12,18 @@ from constants import *
 from .__group import PropertyGroup
 
 class Properties(CTkFrame):
+    """
+    A class representing the properties frame.
+
+    Attributes:
+        _instance (Optional[Properties]): The singleton instance of Properties.
+        groups (Dict[str, PropertyGroup]): A dictionary of property groups.
+        active_entry_widget (Optional[CTkEntry]): The currently active entry widget.
+        hidden (bool): A boolean indicating whether the properties frame is hidden.
+        default_x (int): The default x-coordinate position of the properties frame.
+        default_y (int): The default y-coordinate position of the properties frame.
+    """
+
     _instance: Optional[Properties] = None
     groups: Dict[str, PropertyGroup] = {}
     active_entry_widget: Optional[CTkEntry] = None

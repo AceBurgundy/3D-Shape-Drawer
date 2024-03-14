@@ -11,10 +11,21 @@ from os import path
 from save import open_file_dialog
 
 class PropertyGroup(CTkFrame):
-
+    """
+    A class representing a property group.
+    """
     def __init__(self, master: CTkFrame, title: str, initial_value, property_setter: Callable, property_getter: Callable, *args, **kwargs) -> None:
         """
-        Initialize a new property group
+        Initialize a new property group.
+
+        Args:
+            master (CTkFrame): The parent CTkFrame.
+            title (str): The title of the property group.
+            initial_value: The initial value of the property.
+            property_setter (Callable): The setter function for the property.
+            property_getter (Callable): The getter function for the property.
+            *args: Additional positional arguments to pass to the parent class initializer.
+            **kwargs: Additional keyword arguments to pass to the parent class initializer.
         """
         super().__init__(master, corner_radius=0, fg_color="transparent", *args, **kwargs)
 
@@ -48,6 +59,9 @@ class PropertyGroup(CTkFrame):
     def update_setter_value(self, new_value: Any) -> None:
         """
         Updates the value of the setter
+
+        Args:
+            new_value (Any): The new value to be used
         """
         if self.value_setter is None:
             return
