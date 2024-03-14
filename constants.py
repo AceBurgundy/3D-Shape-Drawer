@@ -10,7 +10,7 @@ ORANGE: Tuple[float, float, float] = (0.949, 0.475, 0.161)
 
 ICON_PATH: str = path.join('icon_asset', "switch.ico")
 
-DEFAULT_PADDING: int = 5
+DEFAULT_PADDING: Literal[5] = 5
 
 BOTTOM_PADDING_ONLY: Tuple[Literal[0], int] = (0, DEFAULT_PADDING)
 RIGHT_PADDING_ONLY: Tuple[Literal[0], int] = (0, DEFAULT_PADDING)
