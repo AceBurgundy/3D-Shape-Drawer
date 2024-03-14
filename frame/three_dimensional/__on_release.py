@@ -18,6 +18,6 @@ def on_mouse_released(canvas_instance: Canvas, event: Event):
         event (Event): A Tkinter event object representing the key press event.
     """
     canvas_instance.dragging = False
-    canvas_instance.mouse_pressed = None
+    canvas_instance.mouse_pressed = ''
     canvas_instance.previous_mouse_x = event.x
     canvas_instance.previous_mouse_y = event.y
