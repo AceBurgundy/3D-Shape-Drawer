@@ -9,18 +9,18 @@ import OpenGL.GL as GL
 
 class Cone(Shape):
 
-    def __init__(self, radius: float = 1.5, height: float = 2.5, slices: int = 30) -> None:
+    def __init__(self, radius: float = 1.5, height: float = 2.5, slices: float = 30) -> None:
         """
         Initializes the cone
 
-        Args:
+        Arguments:
             radius (float): the radius of the cone. Defaults to 1.0
             height (float): the height of the cone. Defaults to 2.0
-            slices (int): the slices of the cone. Defaults to 3
+            slices (float): the slices of the cone. Defaults to 3
         """
         self.__radius: float = radius
         self.__height: float = height
-        self.__slices: int = slices
+        self.__slices: float = slices
 
         super().__init__()
 
@@ -34,10 +34,10 @@ class Cone(Shape):
     @radius.setter
     def radius(self, new_radius: float) -> None:
         """
-        Args:
+        Arguments:
             new_radius (float): the new shapes radius
         """
-        self.__radius = new_radius
+        self.__radius = self.verify_float(Cone.radius, new_radius)
 
     @property
     def height(self) -> float:
@@ -49,41 +49,41 @@ class Cone(Shape):
     @height.setter
     def height(self, new_height: NUMBER) -> None:
         """
-        Args:
+        Arguments:
             new_height (NUMBER): the new shapes height
         """
-        self.__height = new_height
+        self.__height = self.verify_float(Cone.height, new_height)
 
     @property
-    def slices(self) -> int:
+    def slices(self) -> float:
         """
-        slices (int): the shapes slices
+        slices (float): the shapes slices
         """
         return self.__slices
 
     @slices.setter
-    def slices(self, new_slices: int) -> None:
+    def slices(self, new_slices: float) -> None:
         """
-        Args:
-            new_slices (int): the new shapes slices
+        Arguments:
+            new_slices (float): the new shapes slices
         """
-        self.__slices = new_slices
+        self.__slices = self.verify_float(Cone.slices, new_slices)
 
     @override
     def resize(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the cone by Shape.default_increment units.
+        Increases or decreases the size of the cone by Shape.resize_increment units.
 
-        Args:
+        Arguments:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.radius += Shape.default_increment
-            self.height += Shape.default_increment
+            self.radius += Shape.resize_increment
+            self.height += Shape.resize_increment
         else:
-            if self.radius > Shape.default_increment and self.height > Shape.default_increment:
-                self.radius -= Shape.default_increment
-                self.height -= Shape.default_increment
+            if self.radius > Shape.resize_increment and self.height > Shape.resize_increment:
+                self.radius -= Shape.resize_increment
+                self.height -= Shape.resize_increment
 
         self.vertices = self.initialize_vertices()
 
@@ -94,7 +94,7 @@ class Cone(Shape):
         """
         vertices: VERTICES = []
 
-        for slice_index in range(self.__slices + 1):
+        for slice_index in range(int(self.__slices + 1)):
             angle: float = 2 * pi * (slice_index / self.__slices)
             x: float = cos(angle)
             y: float = sin(angle)
@@ -137,7 +137,7 @@ class Cone(Shape):
         """
         Draws a cone
 
-        Args:
+        Arguments:
             offscreen (bool): If the shape will be rendered off screen
         """
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())

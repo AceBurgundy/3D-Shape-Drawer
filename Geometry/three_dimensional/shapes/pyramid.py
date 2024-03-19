@@ -7,64 +7,64 @@ import OpenGL.GL as GL
 
 class Pyramid(Shape):
 
-    def __init__(self, base_length: NUMBER = 3.0, height: NUMBER = 3.0) -> None:
+    def __init__(self, base_length: float = 3.0, height: float = 3.0) -> None:
         """
         Initializes the pyramid
 
-        Args:
-            base_length (NUMBER): the length of the base of the pyramid. Defaults to 1.0
-            height (NUMBER): the height of the pyramid. Defaults to 2.0
+        Arguments:
+            base_length (float): the length of the base of the pyramid. Defaults to 1.0
+            height (float): the height of the pyramid. Defaults to 2.0
         """
-        self.__base_length: NUMBER = base_length
-        self.__height: NUMBER = height
+        self.__base_length: float = base_length
+        self.__height: float = height
         self.__corners: VERTICES = []
 
         super().__init__()
 
     @property
-    def base_length(self) -> NUMBER:
+    def base_length(self) -> float:
         """
-        base_length (NUMBER): the shapes base length
+        base_length (float): the shapes base length
         """
         return self.__base_length
 
-    @property
-    def height(self) -> NUMBER:
+    @base_length.setter
+    def base_length(self, new_base_length: float) -> None:
         """
-        height (NUMBER): the shapes height
+        Arguments:
+            new_base_length (float): the new base_length of the shape
+        """
+        self.__base_length = self.verify_float(Pyramid.base_length, new_base_length)
+
+    @property
+    def height(self) -> float:
+        """
+        height (float): the shapes height
         """
         return self.__height
 
-    @base_length.setter
-    def base_length(self, new_base_length: NUMBER) -> None:
-        """
-        Args:
-            new_base_length (NUMBER): the new base_length of the shape
-        """
-        self.__base_length = new_base_length
-
     @height.setter
-    def height(self, new_height: NUMBER) -> None:
+    def height(self, new_height: float) -> None:
         """
-        Args:
-            new_height (NUMBER): the new height of the shape
+        Arguments:
+            new_height (float): the new height of the shape
         """
-        self.__height = new_height
+        self.__height = self.verify_float(Pyramid.height, new_height)
 
     def resize(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the pyramid by Shape.default_increment units.
+        Increases or decreases the size of the pyramid by Shape.resize_increment units.
 
-        Args:
+        Arguments:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
         if increment:
-            self.base_length += Shape.default_increment
-            self.height += Shape.default_increment
+            self.base_length += Shape.resize_increment
+            self.height += Shape.resize_increment
         else:
-            if self.base_length > Shape.default_increment and self.height > Shape.default_increment:
-                self.base_length -= Shape.default_increment
-                self.height -= Shape.default_increment
+            if self.base_length > Shape.resize_increment and self.height > Shape.resize_increment:
+                self.base_length -= Shape.resize_increment
+                self.height -= Shape.resize_increment
 
         self.vertices = self.initialize_vertices()
 
@@ -114,7 +114,7 @@ class Pyramid(Shape):
         """
         Draws a pyramid
 
-        Args:
+        Arguments:
             offscreen (bool): If the shape will be rendered off screen
         """
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
