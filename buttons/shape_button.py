@@ -19,7 +19,7 @@ class ShapeButton(CTkButton):
         """
         Initializes the Button object.
 
-        Args:
+        Arguments:
             parent (Navigation): The parent CTkFrame object.
             shape_name (str): The name of the shape.
             shape_class_reference (Callable): The callable representing the shape draw method.
@@ -44,7 +44,7 @@ class ShapeButton(CTkButton):
         """
         Handles the button click event.
 
-        Args:
+        Arguments:
             event: The event object.
         """
         super()._clicked(event)
