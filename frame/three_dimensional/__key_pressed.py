@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from copy import deepcopy
+from typing import TYPE_CHECKING, Optional, Union
+
+from CTkToast import CTkToast
+from geometry.three_dimensional.shape import Shape
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
@@ -38,6 +42,10 @@ def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
 
         elif pressed_shift:
             __handle_shift(canvas_instance, key)
+            return
+
+        elif pressed_control:
+            __handle_control(canvas_instance, key)
             return
 
     if key:
@@ -118,3 +126,23 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
     elif key == 'd':
         canvas_instance.move_camera([-1, 0, 0]) # right_vector
         return
+
+def __handle_control(canvas_instance: Canvas, key: str) -> None:
+    """
+    Handles events where another key is being pressed. While the control key is being held
+
+    Arguments:
+        canvas_instance (Canvas): The current running instance of the Canvas
+        event (Event): The Tkinter.Event that carries key pressed information
+    """
+    if key == 'd':
+
+        selected_shape: Optional[Shape] = canvas_instance.selected_shape()
+
+        if not selected_shape:
+            CTkToast().toast('To duplicate, select a shape first')
+            return
+
+        duplicated_shape: Shape = selected_shape.duplicate()
+        canvas_instance.shapes.append(duplicated_shape)
+        CTkToast.toast(f'{duplicated_shape.__class__.__name__} duplicated')

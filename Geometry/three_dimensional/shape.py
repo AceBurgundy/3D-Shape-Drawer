@@ -70,7 +70,6 @@ class Shape(ABC, Observable):
 
         self.id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
         buffer_colors[self.id] = random_rgb(exemption_list=Shape.current_buffer_colors)
-        self.property_tab_value_updater: Optional[Callable] = None
 
         self.vertices: VERTICES = []
 
@@ -281,11 +280,48 @@ class Shape(ABC, Observable):
         """
         return self.__verify_value(shape_property, value, data_type)
 
+    def reinitialize_id_and_assigned_buffer_color(self) -> None:
+        """
+        Generates a new id and assigned_buffer_color for the shape. Useful if the shape is duplicated,
+        calling this method creates a separate id and assigned_color for the copied shape.
+        """
+        self.id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
+        buffer_colors[self.id] = random_rgb(exemption_list=Shape.current_buffer_colors)
+
     def assigned_buffer_color(self) -> RGB:
         """
         The unique background color used by the shape for color picking
         """
         return buffer_colors[self.id]
+
+    def duplicate(self):
+        """
+        Duplicates the current instance of the shape
+        """
+        new_instance: Shape = self.__class__()
+
+        base_class_name: str = 'Shape'
+        sub_class_name: str = self.__class__.__name__
+
+        for attribute_name in dir(self):
+            a_dunder_method: bool = attribute_name.startswith('__') and attribute_name.endswith('__')
+            a_private_field: bool = f'_{base_class_name}__' in attribute_name or f'_{sub_class_name}__' in attribute_name
+            getter_value: Any = getattr(self, attribute_name)
+
+            if a_private_field and not a_dunder_method and not callable(getter_value):
+                clean_attribute_name: str = attribute_name.replace(f'_{base_class_name}__', '').replace(f'_{sub_class_name}__', '')
+
+                if clean_attribute_name == 'texture_path' and getter_value == '':
+                    continue
+
+                setattr(new_instance, clean_attribute_name, getter_value)
+
+        new_instance.reinitialize_id_and_assigned_buffer_color()
+
+        if new_instance.texture_path:
+            new_instance.__initialize_texture()
+
+        return new_instance
 
     @abstractmethod
     def initialize_vertices(self):
