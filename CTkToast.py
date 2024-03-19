@@ -23,7 +23,7 @@ class CTkToast(CTkFrame):
         """
         Initializes an instance of a custom widget.
 
-        Args:
+        Arguments:
             master (Optional[CTk]): The parent widget. Defaults to None.
             position (Optional[Tuple[int, int]]): The position coordinates (x, y) of the widget. Defaults to None.
             delay (int): The delay time in milliseconds. Defaults to 2000.
