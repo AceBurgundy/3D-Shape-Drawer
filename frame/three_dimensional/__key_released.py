@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
+    from geometry.three_dimensional.shape import Shape
 
-from geometry.three_dimensional.shape import Shape
 from .__key_status import get_key_status
 from typing import Dict, List
 from tkinter import Event
@@ -26,14 +26,15 @@ def __handle_key(canvas_instance: Canvas, key: str) -> None:
     """
     Handles events where another key is being pressed.
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'r':
         canvas_instance.pressed_key = ''
+        selected_shape: Optional[Shape] = canvas_instance.selected_shape()
 
-        if Shape.selected_shape is None:
+        if selected_shape is None:
             return
 
-        Shape.selected_shape.rotate_shape = False
+        selected_shape.rotate_shape = False
