@@ -1,9 +1,14 @@
-from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkEntry, CTkSwitch, CTk
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Callable, Optional, Type
+
+if TYPE_CHECKING:
+    from geometry.three_dimensional.shape import Shape
+    from properties.manager import Properties
+
+from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkEntry, CTkSwitch
 from buttons.change_color_toggle import ColorPickerToggle
-from geometry.three_dimensional.shape import Shape
-from typing import Any, Optional, Callable, Type
 from geometry.rgb import rgb_to_hex
-from tkinter import Misc, Entry
 from CTkToast import CTkToast
 from constants import *
 from os import path
@@ -14,12 +19,12 @@ class PropertyGroup(CTkFrame):
     """
     A class representing a property group.
     """
-    def __init__(self, master: CTkFrame, title: str, initial_value, property_setter: Callable, property_getter: Callable, *args, **kwargs) -> None:
+    def __init__(self, properties: Properties, title: str, initial_value, property_setter: Callable, property_getter: Callable, *args, **kwargs) -> None:
         """
         Initialize a new property group.
 
-        Args:
-            master (CTkFrame): The parent CTkFrame.
+        Arguments:
+            properties (CTkFrame): The parent CTkFrame.
             title (str): The title of the property group.
             initial_value: The initial value of the property.
             property_setter (Callable): The setter function for the property.
@@ -27,8 +32,8 @@ class PropertyGroup(CTkFrame):
             *args: Additional positional arguments to pass to the parent class initializer.
             **kwargs: Additional keyword arguments to pass to the parent class initializer.
         """
-        super().__init__(master, corner_radius=0, fg_color="transparent", *args, **kwargs)
-
+        super().__init__(properties, corner_radius=0, fg_color="transparent", *args, **kwargs)
+        self.properties: Properties = properties
         self.columnconfigure(0, minsize=150)
         self.columnconfigure(1, minsize=150)
 
@@ -40,27 +45,27 @@ class PropertyGroup(CTkFrame):
         self.title.grid(row=0, column=0, sticky="e", padx=RIGHT_PADDING_ONLY)
 
         self.value_setter: Optional[CTkButton|CTkEntry|CTkSwitch|ColorPickerToggle] = None
+        self.selected_shape: Callable[[], Optional[Shape]] = lambda: self.properties.app.canvas.selected_shape()
 
         if title == 'Background color':
-            self.value_setter = ColorPickerToggle(self, width=30, initial_color=rgb_to_hex(self.initial_value))
-            self.value_setter.grid(row=0, column=1, sticky="w")
+            value_setter = ColorPickerToggle(self, rgb_to_hex(self.initial_value), self.selected_shape, width=30)
+            value_setter.grid(row=0, column=1, sticky="w")
             return
 
-        if 'path' in title.lower():
+        elif 'path' in title.lower():
             self.value_setter = self.__generate_path_dialog_setter_group()
-            return
 
-        if 'use' in title.lower():
+        elif 'use' in title.lower():
             self.value_setter = self.__generate_switch_setter_group()
-            return
 
-        self.value_setter = self.__generate_entry_setter_group()
+        else:
+            self.value_setter = self.__generate_entry_setter_group()
 
     def update_setter_value(self, new_value: Any) -> None:
         """
         Updates the value of the setter
 
-        Args:
+        Arguments:
             new_value (Any): The new value to be used
         """
         if self.value_setter is None:
@@ -69,21 +74,22 @@ class PropertyGroup(CTkFrame):
         setter_type: Type[CTkButton]|Type[CTkEntry]|Type[CTkSwitch]|Type[ColorPickerToggle] = type(self.value_setter)
 
         if setter_type == CTkButton:
+
             if 'path' in self.title.cget('text').lower():
 
                 file_name: str = path.basename(new_value) if new_value != '' else 'Select Path'
-                current_setter_value: str = self.value_setter.cget("text")
+                new_path: str = self.value_setter.cget("text")
 
-                if current_setter_value != file_name:
+                if new_path != file_name:
                     self.value_setter.configure(text=file_name)
 
                 return
 
         if setter_type == CTkEntry:
-            current_setter_value: str = self.value_setter.cget("placeholder_text")
+            entry_value: Any = self.value_setter.cget("placeholder_text")
 
-            if current_setter_value != new_value:
-                self.value_setter.configure(placeholder_text=new_value)
+            if entry_value != new_value:
+                self.value_setter.configure(placeholder_text="{:.2f}".format(new_value) if type(new_value) == float else new_value)
 
             return
 
@@ -101,8 +107,7 @@ class PropertyGroup(CTkFrame):
                 CTkToast.toast('Texture selection cancelled')
                 return
 
-            if path:
-                self.property_setter(Shape.selected_shape, path)
+            self.property_setter(self.selected_shape(), path)
 
         file_name: str = path.basename(self.initial_value) if self.initial_value != '' else 'Select Path'
         value_setter: CTkButton = CTkButton(self, text=file_name, command=select_path)
@@ -118,9 +123,7 @@ class PropertyGroup(CTkFrame):
             """
             Adds the text change binding when the entry gains focus
             """
-            from properties.manager import Properties
-
-            Properties.active_entry_widget = value_setter
+            self.properties.active_entry_widget = value_setter
             value_setter.bind('<KeyRelease>', on_text_change)
 
         def on_text_change(event) -> None:
@@ -132,13 +135,7 @@ class PropertyGroup(CTkFrame):
             if value == '':
                 return
 
-            try:
-                self.property_setter(Shape.selected_shape, value)
-            except ValueError as error:
-                message: str = str(error)
-
-                if 'int()' in message:
-                    CTkToast.toast(f'Only integers or floats are accepted not {value}')
+            self.property_setter(self.selected_shape(), value)
 
         value_setter: CTkEntry = CTkEntry(placeholder_text=self.initial_value, master=self, corner_radius=0, border_width=0)
         value_setter.bind('<FocusIn>', add_text_change_binding)
@@ -156,7 +153,7 @@ class PropertyGroup(CTkFrame):
             Toggles switch and sets method
             """
             current_value: bool = False if value_setter.get() == 0 else True
-            set_succesful: bool = self.property_setter(Shape.selected_shape, current_value)
+            set_succesful: bool = self.property_setter(self.selected_shape(), current_value)
 
             if not set_succesful:
                 value_setter.deselect()
