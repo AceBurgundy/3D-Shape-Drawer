@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
@@ -15,7 +15,7 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
     """
     Handles mouse move event
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current instance of the canvas
         event (Event): A Tkinter event object representing the key press event.
     """
@@ -23,10 +23,12 @@ def on_mouse_move(canvas_instance: Canvas, event: Event):
     Shape.mouse_y = event.y
 
     if canvas_instance.pressed_key == 'r':
-        if Shape.selected_shape is None:
+        selected_shape: Optional[Shape] = canvas_instance.selected_shape()
+
+        if selected_shape is None:
             CTkToast.toast("Select a shape first to rotate")
         else:
-            Shape.selected_shape.rotate_shape = True
+            selected_shape.rotate_shape = True
             return
 
     if canvas_instance.mouse_pressed != '':
