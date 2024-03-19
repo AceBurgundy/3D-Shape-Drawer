@@ -2,27 +2,21 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
-from geometry.three_dimensional.shape import Shape
 from .__key_status import get_key_status
-from CTkToast import CTkToast
 
 from typing import Dict, List
 from tkinter import Event
-
-toast: Callable = lambda command_name: CTkToast.toast(f"To {command_name.replace('_', ' ')}, select a shape first")
-run: Callable = lambda command, *args: getattr(Shape.selected_shape, command.__name__)(*args)
-command_or_toast: Callable = lambda command, *args: run(command, *args) if Shape.selected_shape is not None else toast(command.__name__)
 
 def handle_key_pressed(canvas_instance: Canvas, event: Event) -> None:
     """
     Handles key pressed events sent from main CTk frame
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
@@ -53,60 +47,56 @@ def __handle_shift(canvas_instance: Canvas, key: str) -> None:
     """
     Handles events where another key is pressed, while the shift key is being held down
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'Up':
-        command_or_toast(Shape.move_up)
-        return
+        canvas_instance.command_shape('move_up')
 
-    if key == 'Down':
-        command_or_toast(Shape.move_down)
-        return
+    elif key == 'Down':
+        canvas_instance.command_shape('move_down')
 
 def __handle_shift_and_control(canvas_instance: Canvas, key: str) -> None:
     """
     Handles events where another key is pressed, while the shift key and control key is being held down
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'Left':
-        command_or_toast(Shape.resize, False)
-        return
+        canvas_instance.command_shape('resize', False)
 
-    if key == 'Right':
-        command_or_toast(Shape.resize)
-        return
+    elif key == 'Right':
+        canvas_instance.command_shape('resize')
 
 def __handle_key(canvas_instance: Canvas, key: str) -> None:
     """
     Handles events where another key is being pressed.
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current running instance of the Canvas
         event (Event): The Tkinter.Event that carries key pressed information
     """
     if key == 'Up':
-        command_or_toast(Shape.move_forward)
+        canvas_instance.command_shape('move_forward')
         return
 
     elif key == 'Down':
-        command_or_toast(Shape.move_backward)
+        canvas_instance.command_shape('move_backward')
         return
 
     elif key == 'Left':
-        command_or_toast(Shape.move_left)
+        canvas_instance.command_shape('move_left')
         return
 
     elif key == 'Right':
-        command_or_toast(Shape.move_right)
+        canvas_instance.command_shape('move_right')
         return
 
     elif key == 'Delete':
-        command_or_toast(Shape.delete)
+        canvas_instance.command_shape('delete')
         return
 
     elif key == 'r':
