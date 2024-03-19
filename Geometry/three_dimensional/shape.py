@@ -1,30 +1,19 @@
-# for type checking purposes.
-
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Callable, Optional
-
-if TYPE_CHECKING:
-    from properties.manager import Properties
-
-from typing import Any, Dict, KeysView, ValuesView
-from abc import ABC, abstractmethod
-from pathlib import Path
-from PIL import Image
-from os import path
-import inspect
-import pickle
-
+from geometry.three_dimensional.buffers import buffer_colors
 from geometry.rgb import random_rgb
 from CTkToast import CTkToast
 from custom_types import *
 from constants import *
 from save import *
 
+from typing import Any, KeysView, ValuesView, Callable
+from abc import ABC, abstractmethod
+from observers import Observable
+from PIL import Image
+
 import OpenGL.GLU as GLU
 import OpenGL.GL as GL
 
-class Shape(ABC):
+class Shape(ABC, Observable):
     """
     Abstract base class representing a 3D geometric shape.
 
@@ -41,11 +30,8 @@ class Shape(ABC):
         mouse_x (int): The current X-coordinate of the mouse.
         mouse_y (int): The current Y-coordinate of the mouse.
     """
-
-    selected_shape: Optional['Shape'] = None
-
-    buffer_colors: Dict[int, RGB] = {}
-    default_increment: int = 1
+    translate_increment: float = 0.1
+    resize_increment: float = 0.1
     grid_color: RGB = BLACK
 
     shape_ids: KeysView[int] = buffer_colors.keys()
@@ -80,8 +66,10 @@ class Shape(ABC):
             __y (int): The Y-coordinate.
             __z (int): The Z-coordinate.
         """
+        super().__init__()
+
         self.id: int = 0 if len(Shape.shape_ids) <= 0 else len(Shape.shape_ids) + 1
-        Shape.buffer_colors[self.id] = random_rgb(exemption_list=Shape.current_buffer_colors)
+        buffer_colors[self.id] = random_rgb(exemption_list=Shape.current_buffer_colors)
         self.property_tab_value_updater: Optional[Callable] = None
 
         self.vertices: VERTICES = []
@@ -100,12 +88,12 @@ class Shape(ABC):
         self.texture_loaded = False
         self.texture_id = None
 
-        self.__x_rotation: int = 0
-        self.__y_rotation: int = 0
+        self.__x_rotation: float = 0.0
+        self.__y_rotation: float = 0.0
 
-        self.__x: int = 0
-        self.__y: int = 0
-        self.__z: int = 0
+        self.__x: float = 0.0
+        self.__y: float = 0.0
+        self.__z: float = 0.0
 
     @property
     def background_color(self) -> RGB:
@@ -114,6 +102,14 @@ class Shape(ABC):
         """
         return self.__background_color
 
+    @background_color.setter
+    def background_color(self, new_background_color: RGB) -> None:
+        """
+        Arguments:
+            new_background_color (RGB): The shapes new background color
+        """
+        self.__background_color = new_background_color
+
     @property
     def use_texture(self) -> bool:
         """
@@ -121,60 +117,10 @@ class Shape(ABC):
         """
         return self.__use_texture
 
-    @property
-    def x_rotation(self) -> int:
-        """
-        x_rotation (int): the x rotation of the shape.
-        """
-        return self.__x_rotation
-
-    @property
-    def y_rotation(self) -> int:
-        """
-        y_rotation (int): the y rotation of the shape.
-        """
-        return self.__y_rotation
-
-    @property
-    def texture_path(self) -> str:
-        """
-        texture_path (str): The path to the texture.
-        """
-        return self.__texture_path
-
-    @property
-    def x(self) -> int:
-        """
-        x (int): The X-coordinate.
-        """
-        return self.__x
-
-    @property
-    def y(self) -> int:
-        """
-        y (int): The Y-coordinate.
-        """
-        return self.__y
-
-    @property
-    def z(self) -> int:
-        """
-        z (int): The Z-coordinate.
-        """
-        return self.__z
-
-    @background_color.setter
-    def background_color(self, new_background_color: RGB) -> None:
-        """
-        Args:
-            new_background_color (RGB): The shapes new background color
-        """
-        self.__background_color = new_background_color
-
     @use_texture.setter
     def use_texture(self, new_value: bool) -> bool:
         """
-        Args:
+        Arguments:
             new_value (bool): The new value for use_texture.
         """
         if self.__texture_path == '' and self.use_texture == False and new_value == True:
@@ -184,23 +130,42 @@ class Shape(ABC):
         self.__use_texture = new_value
         return True
 
+    @property
+    def x_rotation(self) -> float:
+        """
+        x_rotation (float): the x rotation of the shape.
+        """
+        return self.__x_rotation
+
     @x_rotation.setter
-    def x_rotation(self, new_rotation: int) -> None:
+    def x_rotation(self, new_rotation: float) -> None:
         """
-        Args:
-            new_rotation (int): The new rotation value.
+        Arguments:
+            new_rotation (float): The new rotation value.
         """
-        self.__x_rotation = new_rotation
-        self.update_value_from_property_manager(Shape.x_rotation, new_rotation)
+        self.__x_rotation = self.verify_float(Shape.x_rotation, new_rotation)
+
+    @property
+    def y_rotation(self) -> float:
+        """
+        y_rotation (float): the y rotation of the shape.
+        """
+        return self.__y_rotation
 
     @y_rotation.setter
-    def y_rotation(self, new_rotation: int) -> None:
+    def y_rotation(self, new_rotation: float) -> None:
         """
-        Args:
-            new_rotation (int): The new rotation value.
+        Arguments:
+            new_rotation (float): The new rotation value.
         """
-        self.__y_rotation = new_rotation
-        self.update_value_from_property_manager(Shape.y_rotation, new_rotation)
+        self.__y_rotation = self.verify_float(Shape.y_rotation, new_rotation)
+
+    @property
+    def texture_path(self) -> str:
+        """
+        texture_path (str): The path to the texture.
+        """
+        return self.__texture_path
 
     @texture_path.setter
     def texture_path(self, new_path: str) -> Optional[str]:
@@ -213,40 +178,114 @@ class Shape(ABC):
         self.__texture_path = new_path
 
         self.__initialize_texture()
-        self.update_value_from_property_manager(Shape.texture_path, new_path)
+        self.notify_observers('shape_setter_texture_path', new_path)
+
+    @property
+    def x(self) -> float:
+        """
+        x (float): The X-coordinate.
+        """
+        return self.__x
 
     @x.setter
-    def x(self, new_x: int) -> None:
+    def x(self, new_x: float) -> None:
         """
-        Args:
-            new_x (int): The new X-coordinate value.
+        Arguments:
+            new_x (float): The new X-coordinate value.
         """
-        self.__x = new_x
-        self.update_value_from_property_manager(Shape.x, new_x)
+        self.__x = self.verify_float(Shape.x, new_x)
+
+    @property
+    def y(self) -> float:
+        """
+        y (float): The Y-coordinate.
+        """
+        return self.__y
 
     @y.setter
-    def y(self, new_y: int) -> None:
+    def y(self, new_y: float) -> None:
         """
-        Args:
-            new_y (int): The new Y-coordinate value.
+        Arguments:
+            new_y (float): The new Y-coordinate value.
         """
-        self.__y = new_y
-        self.update_value_from_property_manager(Shape.y, new_y)
+        self.__y = self.verify_float(Shape.y, new_y)
+
+    @property
+    def z(self) -> float:
+        """
+        z (float): The Z-coordinate.
+        """
+        return self.__z
 
     @z.setter
-    def z(self, new_z: int) -> None:
+    def z(self, new_z: float) -> None:
         """
-        Args:
-            new_z (int): The new Z-coordinate value.
+        Arguments:
+            new_z (float): The new Z-coordinate value.
         """
-        self.__z = new_z
-        self.update_value_from_property_manager(Shape.z, new_z)
+        self.__z = self.verify_float(Shape.z, new_z)
+
+    def __verify_value(self, shape_property: property, value: Any, data_type: Any) -> Any:
+        """
+        Verify and set the value of a property.
+
+        Arguments:
+            shape_property (property): The property to verify and set.
+            value (Any): The value to be set.
+            data_type (Any): The expected data type of the value.
+
+        Returns:
+            Any: The verified value else its current value or 0.
+
+        Raises:
+            ValueError: If shape_property is None, value is None, or data_type is None.
+            AttributeError: If shape_property does not have a getter method.
+        """
+        if shape_property is None:
+            raise ValueError("Property is required for getting the current value and setting the name for notifying observers")
+
+        getter = shape_property.fget
+
+        if getter is None:
+            raise AttributeError(f"Property reference {shape_property} does not have a getter method.")
+
+        property_name: str = getter.__name__
+        current_value: Any = getter(self)
+
+        if value is None:
+            raise ValueError("Value cannot be None")
+
+        if data_type is None:
+            raise ValueError("Type cannot be None")
+
+        try:
+            data_type(value)
+
+            self.notify_observers(f'shape_setter_{property_name}', value)
+            return value
+        except:
+            CTkToast.toast(f'{property_name} only accepts {data_type.__name__}')
+            return current_value if current_value else 0
+
+    def verify_float(self, shape_property: property, value: float, data_type: type = float) -> float:
+        """
+        Verify and set the value of a float property.
+
+        Arguments:
+            shape_property (property): The property to verify and set.
+            value (float): The float value to be set.
+            data_type (type, optional): The expected data type of the value. Defaults to float.
+
+        Returns:
+            float: The verified and set float value.
+        """
+        return self.__verify_value(shape_property, value, data_type)
 
     def assigned_buffer_color(self) -> RGB:
         """
         The unique background color used by the shape for color picking
         """
-        return Shape.buffer_colors[self.id]
+        return buffer_colors[self.id]
 
     @abstractmethod
     def initialize_vertices(self):
@@ -260,7 +299,7 @@ class Shape(ABC):
         """
         Abstract method to draw the shape.
 
-        Args:
+        Arguments:
             offscreen (bool): If the shape is to be rendered off screen
         """
         raise NotImplementedError("You might've not implemented this shape")
@@ -276,7 +315,7 @@ class Shape(ABC):
         """
         Renders the shape to the canvas
 
-        Args:
+        Arguments:
             offscreen (bool): If the shape is to be rendered off screen
         """
         GL.glPushMatrix()
@@ -321,7 +360,7 @@ class Shape(ABC):
         """
         Draw a circle at the specified (x, y, z) coordinate.
 
-        Args:
+        Arguments:
             x (int): The x-coordinate of the center of the circle.
             y (int): The y-coordinate of the center of the circle.
             z (int): The z-coordinate of the center of the circle.
@@ -370,160 +409,57 @@ class Shape(ABC):
 
     def delete(self) -> None:
         """
-        Deletes a shape by removing its assigned buffer color and removing it from the Canvas's shapes.
+        Deletes a shape by removing its assigned buffer color
+        then emits an event called 'shapes_deleted' which gets caught by Canvas.notify which then
+        removes it from the Canvas's shapes.
         """
-        if Shape.selected_shape is None:
-            return
-
-        from frame.three_dimensional.canvas import Canvas
-
-        del Shape.buffer_colors[Shape.selected_shape.id]
-        for shape in Canvas.shapes:
-            if shape.id == Shape.selected_shape.id:
-                Canvas.shapes.remove(shape)
-                break
-
-        Shape.selected_shape = None
-
-        from properties.manager import Properties
-        Properties.hide()
-
-        return
-
-    def update_value_from_property_manager(self, shape_property_setter_reference: property, new_value: Any) -> None:
-        """
-        Updates the value of a property manager setter from a specific setter method value.
-
-        Args:
-            shape_property_setter_reference (property): The reference to the property that called this method
-            new_value (Any): The new value you wish to set the property manager group value to.
-        """
-        if self.property_tab_value_updater is None:
-            return
-
-        if shape_property_setter_reference.fget is None:
-            return
-
-        self.property_tab_value_updater(shape_property_setter_reference.fget.__name__, new_value)
-
-    @classmethod
-    def export_to_file(cls) -> bool:
-        """
-        Save a list of class instances and static fields to a file with the .pkl format.
-
-        Returns:
-            bool: If the file has been saved succesfully
-        """
-        from frame.three_dimensional.canvas import Canvas
-
-        file_path: str|None = save_file_dialog()
-
-        if file_path is None:
-            CTkToast.toast('Cancelled file selection')
-            return False
-
-        static_fields = {}
-        for name, value in inspect.getmembers(cls):
-            if not name.startswith('__') and not inspect.ismethod(value):
-                static_fields[name] = value
-
-        try:
-            export_data: Dict[str, Any] = {
-                "static_fields": static_fields,
-                "shapes": Canvas.shapes
-            }
-
-            with open(file_path, 'wb') as f:
-                pickle.dump(export_data, f)
-                CTkToast.toast('Exported')
-            return True
-
-        except Exception as error:
-            CTkToast.toast(f"An error occurred while opening the file: {error}")
-
-        return False
-
-    @classmethod
-    def import_from_file(cls):
-        """
-        Import a list of class instances and static fields from a file with the .pkl format.
-
-        Args:
-        file_path (str): The path of the file to import.
-
-        Returns:
-        list: The imported list of class instances.
-        """
-        from frame.three_dimensional.canvas import Canvas
-
-        file_path: Optional[str] = open_file_dialog()
-
-        if file_path is None:
-            CTkToast.toast('Cancelled selection')
-            return
-
-        if not path.isfile(file_path):
-            CTkToast.toast('Path must be a file')
-            return
-
-        if Path(file_path).suffix != '.pkl':
-            CTkToast.toast('File is not supported')
-            return
-
-        with open(file_path, 'rb') as file:
-            imported_data: Dict[str, Any] = pickle.load(file)
-
-        static_fields: Dict[str, Any] = imported_data.get('static_fields', None)
-        shapes: List['Shape'] = imported_data.get('shapes', None)
-
-        if static_fields is None or shapes is None:
-            CTkToast.toast('Invalid imported file')
-            return False
-
-        for name, value in static_fields.items():
-            setattr(cls, name, value)
-
-        if len(shapes) > 0:
-            Canvas.shapes = shapes
+        del buffer_colors[self.id]
+        self.notify_observers('shape_deleted')
 
     def move_up(self) -> None:
         """
         Moves shape up
         """
-        self.z += Shape.default_increment
+        self.z += Shape.translate_increment
+        self.notify_observers('shape_move_up', self.z)
         return
 
     def move_down(self) -> None:
         """
         Moves shape down
         """
-        self.z -= Shape.default_increment
+        self.z -= Shape.translate_increment
+        self.notify_observers('shape_move_down', self.z)
         return
 
     def move_forward(self) -> None:
         """
         Moves shape forward (away from the viewer along the positive Z-axis)
         """
-        self.y += Shape.default_increment
+        self.y += Shape.translate_increment
+        self.notify_observers('shape_move_forward', self.y)
         return
 
     def move_backward(self) -> None:
         """
         Moves shape backward (closer to the viewer along the negative Z-axis)
         """
-        self.y -= Shape.default_increment
+        self.y -= Shape.translate_increment
+        self.notify_observers('shape_move_backward', self.y)
         return
 
     def move_left(self) -> None:
         """
         Moves shape left (along the negative X-axis)
         """
-        self.x -= Shape.default_increment
+        self.x -= Shape.translate_increment
+        self.notify_observers('shape_move_left', self.x)
         return
 
     def move_right(self) -> None:
         """
         Moves shape right (along the positive X-axis)
         """
-        self.x += Shape.default_increment
+        self.x += Shape.translate_increment
+        self.notify_observers('shape_move_right', self.x)
         return
