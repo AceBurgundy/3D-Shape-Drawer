@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Tuple
-from properties.manager import Properties
+from typing import TYPE_CHECKING, Dict, Tuple
 
+from custom_types import RGB
 
 if TYPE_CHECKING:
     from frame.three_dimensional.canvas import Canvas
 
-from geometry.three_dimensional.shape import Shape
 from tkinter import Event
-from numpy import float32
 from typing import List
 
 import OpenGL.GL as GL
@@ -20,7 +18,7 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
     """
     Handles mouse click events
 
-    Args:
+    Arguments:
         canvas_instance (Canvas): The current instance of the canvas
         event (Event): A Tkinter event object representing the key press event.
     """
@@ -41,14 +39,16 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
         GL.glPixelStorei(GL.GL_PACK_ALIGNMENT, 1)
 
-        long_float_colors: List[float32] = GL.glReadPixels(event.x, mouse_y, 1, 1, GL.GL_RGB, GL.GL_FLOAT)[0][0]
+        long_float_colors = GL.glReadPixels(event.x, mouse_y, 1, 1, GL.GL_RGB, GL.GL_FLOAT)[0][0]
         picked_rgb: Tuple[int, int, int] = tuple(round(float(color), 2) for color in long_float_colors)
 
         # Unbind the offscreen framebuffer
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         selected_shape_id: int|None = None
 
-        for shape_id, shape_rgb in Shape.buffer_colors.items():
+        from geometry.three_dimensional.buffers import buffer_colors
+
+        for shape_id, shape_rgb in buffer_colors.items():
             if picked_rgb == shape_rgb:
                 selected_shape_id = shape_id
                 break
@@ -57,10 +57,8 @@ def on_mouse_clicked(canvas_instance: Canvas, event: Event) -> None:
             shape.selected = shape.id == selected_shape_id
 
             if shape.selected:
-                Shape.selected_shape = shape
-                Properties.generate_shape_properties(Shape.selected_shape.__class__)
-                Shape.selected_shape.property_tab_value_updater = Properties.update_group_value
+                shape.notify_observers("shape_selected")
 
         if selected_shape_id is None:
-            Shape.selected_shape = None
-            Properties.hide()
+            canvas_instance.properties.clear()
+
