@@ -7,7 +7,7 @@ def random_rgb(exemption_list: Optional[ValuesView[RGB]] = None) -> RGB:
     Generates random RGB float values between 0.0 and 1.0 for OpenGL.GL.
     Ensures the generated RGB tuple is unique in the buffer_colors.
 
-    Args:
+    Arguments:
         exemption_list (List[Tuple[float, float, float]]): List of rgb tuples to avoid
 
     Returns:
@@ -28,7 +28,7 @@ def rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
     """
     Convert a tuple of three floats representing RGB values to a hexadecimal color string.
 
-    Args:
+    Arguments:
         rgb (Tuple[float, float, float]): A tuple of three floats, each between 0.0 and 1.0,
             representing the red, green, and blue components of a color.
 
@@ -58,7 +58,7 @@ def hex_to_rgb(hex_color: str) -> RGB:
     """
     Converts hex into rgb where each element is a float 1.00
 
-    Args:
+    Arguments:
         hex_color (str): The hex_color to be converted
 
     Raises:
@@ -87,7 +87,7 @@ def process_rgb(rgb_argument: Iterable[int|float]) -> RGB:
     """
     Processes the passed rgb argument.
 
-    Args:
+    Arguments:
         An Iterable of rgb values
 
     Raises:
