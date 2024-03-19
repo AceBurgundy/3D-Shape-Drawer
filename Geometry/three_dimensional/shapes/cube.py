@@ -8,18 +8,20 @@ import OpenGL.GL as GL
 
 class Cube(Shape):
 
-    def __init__(self, width: NUMBER = 2, height: NUMBER = 2, depth: NUMBER = 2) -> None:
+    def __init__(self, width: float = 2.0, height: float = 2.0, depth: float = 2.0) -> None:
         """
         Initializes the cube
 
-        Args:
-            width (NUMBER): the width of the cube. Defaults to 2
-            height (NUMBER): the height of the cube. Defaults to 2
-            depth (NUMBER): the depth of the cube. Defaults to 3
+        Arguments:
+            width (float): the width of the cube. Defaults to 2
+            height (float): the height of the cube. Defaults to 2
+            depth (float): the depth of the cube. Defaults to 3
         """
-        self.__width: NUMBER = width
-        self.__height: NUMBER = height
-        self.__depth: NUMBER = depth
+        self.__width: float = width
+        self.__height: float = height
+        self.__depth: float = depth
+
+        self.__scale: float = 1.0
 
         super().__init__()
 
@@ -39,102 +41,142 @@ class Cube(Shape):
         )
 
     @property
-    def width(self) -> NUMBER:
+    def width(self) -> float:
         """
-        width (NUMBER): the shapes width
+        width (float): the shapes width
         """
         return self.__width
 
-    @property
-    def height(self) -> NUMBER:
+    @width.setter
+    def width(self, new_width: float) -> None:
         """
-        height (NUMBER): the shapes height
+        Arguments:
+            new_width (float): the new width of the shape
+        """
+        self.__width = self.verify_float(Cube.width, new_width)
+
+    @property
+    def height(self) -> float:
+        """
+        height (float): the shapes height
         """
         return self.__height
 
-    @property
-    def depth(self) -> NUMBER:
+    @height.setter
+    def height(self, new_height: float) -> None:
         """
-        depth (NUMBER): the shapes depth
+        Arguments:
+            new_height (float): the new height of the shape
+        """
+        self.__height = self.verify_float(Cube.height, new_height)
+
+    @property
+    def scale(self) -> float:
+        """
+        scale (float): the shapes scale
+        """
+        return self.__scale
+
+    @scale.setter
+    def scale(self, new_scale: float) -> None:
+        """
+        Arguments:
+            new_scale (float): the new scale of the shape
+        """
+        self.__scale = self.verify_float(Cube.scale, new_scale)
+
+    @property
+    def depth(self) -> float:
+        """
+        depth (float): the shapes depth
         """
         return self.__depth
 
-    @width.setter
-    def width(self, new_width: NUMBER) -> None:
-        """
-        Args:
-            new_width (NUMBER): the new width of the shape
-        """
-        self.__width = new_width
-
-    @height.setter
-    def height(self, new_height: NUMBER) -> None:
-        """
-        Args:
-            new_height (NUMBER): the new height of the shape
-        """
-        self.__height = new_height
-
     @depth.setter
-    def depth(self, new_depth: NUMBER) -> None:
+    def depth(self, new_depth: float) -> None:
         """
-        Args:
-            new_depth (NUMBER): the new depth of the shape
+        Arguments:
+            new_depth (float): the new depth of the shape
         """
-        self.__depth = new_depth
+        self.__depth = self.verify_float(Cube.depth, new_depth)
 
     def half_width(self) -> float:
         """
-        half_width (NUMBER): the shapes half width
+        half_width (float): the shapes half width
         """
         return self.width / 2
 
     def half_height(self) -> float:
         """
-        half_height (NUMBER): the shapes half height
+        half_height (float): the shapes half height
         """
         return self.height / 2
 
     def half_depth(self) -> float:
         """
-        half_depth (NUMBER): the shapes half depth
+        half_depth (float): the shapes half depth
         """
         return self.depth / 2
 
-    @override
     def resize(self, increment: bool = True) -> None:
         """
-        Increases or decreases the size of the cube by Shape.default_increment units.
+        Increases or decreases the size of the shape.
 
-        Args:
+        Arguments:
             increment (bool): If True, increase the size, else decrease. Defaults to True.
         """
-        if increment:
-            self.width += Shape.default_increment
-            self.height += Shape.default_increment
-            self.depth += Shape.default_increment
-        else:
-            if self.width > Shape.default_increment and self.height > Shape.default_increment and self.depth > Shape.default_increment:
-                self.width -= Shape.default_increment
-                self.height -= Shape.default_increment
-                self.depth -= Shape.default_increment
+        factor: float = Shape.resize_increment if increment else -Shape.resize_increment
+        center: Tuple[float, float, float] = self.calculate_center()
 
-        self.vertices = self.initialize_vertices()
+        self.scale = self.width
+
+        # Adjust the size based on the scale factor
+        self.width += factor * Shape.resize_increment
+        self.height += factor * Shape.resize_increment
+        self.depth += factor * Shape.resize_increment
+
+        for index in range(len(self.vertices)):
+            x, y, z = self.vertices[index]
+
+            # Move vertices relative to the center
+            self.vertices[index] = (
+                center[0] + (x - center[0]) * (1 + factor / self.width),
+                center[1] + (y - center[1]) * (1 + factor / self.height),
+                center[2] + (z - center[2]) * (1 + factor / self.depth)
+            )
+
+    def calculate_center(self) -> Tuple[float, float, float]:
+        """
+        Calculates the center of the shape.
+
+        Returns:
+            Tuple[float, float, float]: The coordinates of the center.
+        """
+        sum_x = sum_y = sum_z = 0.0
+        for x, y, z in self.vertices:
+            sum_x += x
+            sum_y += y
+            sum_z += z
+        return sum_x / len(self.vertices), sum_y / len(self.vertices), sum_z / len(self.vertices)
 
     @override
     def initialize_vertices(self) -> VERTICES:
         """
         Returns the cubes initial vertices
         """
+        half_width: float = self.half_width()
+        half_height: float = self.half_height()
+        half_depth: float = self.half_depth()
+
         return [
-            (-self.half_width(), -self.half_height(), -self.half_depth()),  # Vertex 0
-            (self.half_width(), -self.half_height(), -self.half_depth()),   # Vertex 1
-            (self.half_width(), self.half_height(), -self.half_depth()),    # Vertex 2
-            (-self.half_width(), self.half_height(), -self.half_depth()),   # Vertex 3
-            (-self.half_width(), -self.half_height(), self.half_depth()),   # Vertex 4
-            (self.half_width(), -self.half_height(), self.half_depth()),    # Vertex 5
-            (self.half_width(), self.half_height(), self.half_depth()),     # Vertex 6
-            (-self.half_width(), self.half_height(), self.half_depth())     # Vertex 7
+            (-half_width, -half_height, -half_depth),  # Vertex 0
+            (half_width, -half_height, -half_depth),   # Vertex 1
+            (half_width, half_height, -half_depth),    # Vertex 2
+            (-half_width, half_height, -half_depth),   # Vertex 3
+            (-half_width, -half_height, half_depth),   # Vertex 4
+            (half_width, -half_height, half_depth),    # Vertex 5
+            (half_width, half_height, half_depth),     # Vertex 6
+            (-half_width, half_height, half_depth)     # Vertex 7
         ]
 
     @override
@@ -170,7 +212,7 @@ class Cube(Shape):
         """
         Draws a cube
 
-        Args:
+        Arguments:
             offscreen (bool): If the shape will be rendered off screen
         """
         GL.glColor3f(*self.background_color if not offscreen else self.assigned_buffer_color())
