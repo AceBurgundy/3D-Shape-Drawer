@@ -5,7 +5,7 @@ def get_key_status(event: Event):
     """
     Filters data returned by CTk Key Press event
 
-    Args:
+    Arguments:
         event (Event): A Tkinter event object representing the key press event.
     """
     result: Dict[str, List|str] = {}
