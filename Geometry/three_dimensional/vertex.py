@@ -10,7 +10,7 @@ class Vertex:
         """
         Creates a vertex in a 3D plane
 
-        Args:
+        Arguments:
             x (float): The x point of the vertex.
             y (float): The y point of the vertex.
             z (float): The z point of the vertex.
