@@ -11,6 +11,7 @@ def get_instance_properties(class_reference):
     class_data = {}
 
     for field_name in dir(class_reference):
+
         field = getattr(class_reference, field_name)
 
         if not isinstance(field, property):

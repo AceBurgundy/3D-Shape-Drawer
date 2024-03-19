@@ -1,4 +1,4 @@
-from typing import List, Tuple, TypeAlias, Optional
+from typing import List, Tuple, TypeAlias, Optional, Literal
 
 NUMBER: TypeAlias = int|float
 
@@ -14,4 +14,5 @@ RGBA: TypeAlias = Tuple[float, float, float, float]
 RGBS: TypeAlias = List[RGB]
 RGBAS: TypeAlias = List[RGBA]
 
+HOMOGENEOUS_COORDINATE: TypeAlias = Tuple[NUMBER, NUMBER, NUMBER, NUMBER]
 COORDINATE: TypeAlias = List[int]
