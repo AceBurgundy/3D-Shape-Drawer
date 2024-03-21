@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from constants import DEFAULT_PADDING
-from properties.manager import Properties
 
 if TYPE_CHECKING:
     from geometry.three_dimensional.shape import Shape
@@ -28,7 +27,8 @@ from .__on_click import on_mouse_clicked
 from .__on_move import on_mouse_move
 
 from geometry.three_dimensional.shapes.cube import Cube
-from observers import Observable, Observer
+from properties.manager import Properties
+from observers import Observer
 from CTkToast import CTkToast
 from custom_types import *
 from numpy import dot
