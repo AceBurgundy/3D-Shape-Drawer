@@ -258,10 +258,10 @@ class Shape(ABC, Observable):
             raise ValueError("Type cannot be None")
 
         try:
-            data_type(value)
+            converted_value: Any = data_type(value)
 
-            self.notify_observers(f'shape_setter_{property_name}', value)
-            return value
+            self.notify_observers(f'shape_setter_{property_name}', converted_value)
+            return converted_value
         except:
             CTkToast.toast(f'{property_name} only accepts {data_type.__name__}')
             return current_value if current_value else 0
